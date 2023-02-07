@@ -1,0 +1,39 @@
+defaults:
+  - algorithm: sac
+  - search_space: sac
+  - override hydra/sweeper: PBT
+  - override hydra/launcher: submitit_local
+
+hydra:
+#  launcher:
+#    partition: cpu_short
+#    cpus_per_task: 1
+#    mem_gb: 1
+#    gres: null
+#    timeout_min: 10
+  sweeper:
+    budget: ${algorithm.total_timesteps}
+    budget_variable: algorithm.total_timesteps
+    loading_variable: load
+    saving_variable: save
+    optimizer: bgt
+    pbt_kwargs:
+      population_size: 8
+      config_interval: 1e4
+      patience: 3
+      init_size: 1
+    search_space: ${search_space}
+  run:
+    dir: ./tmp/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: ./tmp/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
+env_name: MountainCarContinuous-v0
+seed: 0
+load: false
+save: false
+reward_curves: false
+nas_hidden_size_p: 256
+nas_hidden_size_v: 256
+nas_num_layers_p: 2
+nas_num_layers_v: 2
