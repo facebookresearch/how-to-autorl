@@ -1,0 +1,56 @@
+hyperparameters:
+  algorithm.model_kwargs.learning_rate:
+    type: uniform_float
+    lower: 0.000001
+    upper: 0.01
+    log: true
+  algorithm.model_kwargs.batch_size:
+    type: categorical
+    choices: [16, 32, 64, 128]
+  algorithm.model_kwargs.n_steps:
+    type: categorical
+    choices: [256, 512, 1024, 2048, 4096]
+  algorithm.model_kwargs.n_epochs:
+    type: uniform_int
+    lower: 5
+    upper: 20
+    log: false
+  algorithm.model_kwargs.gae_lambda:
+    type: uniform_float
+    lower: 0.8
+    upper: 0.9999
+    log: false
+  algorithm.model_kwargs.clip_range:
+    type: uniform_float
+    lower: 0.0
+    upper: 0.5
+    log: false
+  algorithm.model_kwargs.clip_range_vf:
+    type: uniform_float
+    lower: 0.0
+    upper: 0.5
+    log: false
+  algorithm.model_kwargs.normalize_advantage:
+    type: categorical
+    choices: [True, False]
+  algorithm.model_kwargs.ent_coef:
+    type: uniform_float
+    lower: 0.0
+    upper: 0.5
+    log: false
+  algorithm.model_kwargs.vf_coef:
+    type: uniform_float
+    lower: 0.0
+    upper: 1.0
+    log: false
+  algorithm.model_kwargs.max_grad_norm:
+    type: uniform_float
+    lower: 0.0
+    upper: 1.0
+    log: false
+  algorithm.model_kwargs.use_sde:
+    type: categorical
+    choices: [True, False]
+  algorithm.model_kwargs.sde_sample_freq:
+    type: categorical
+    choices: [1, 2, 4, 8]

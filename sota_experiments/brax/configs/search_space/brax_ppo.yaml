@@ -1,0 +1,44 @@
+hyperparameters:
+  learning_rate:
+    type: uniform_float
+    lower: 0.000001
+    upper: 0.01
+    log: true
+  batch_size:
+    type: categorical
+    choices: [128,256,512,1024,2048]
+  num_minibatches:
+    type: uniform_int
+    lower: 0
+    upper: 7
+    log: false
+  num_update_epochs:
+    type: uniform_int
+    lower: 1
+    upper: 15
+    log: false
+  gae_lambda:
+    type: uniform_float
+    lower: 0.5
+    upper: 0.9999
+    log: false
+  epsilon:
+    type: uniform_float
+    lower: 0.01
+    upper: 0.9
+    log: false
+  reward_scaling:
+    type: uniform_float
+    lower: 0.01
+    upper: 1.0
+    log: false
+  entropy_cost:
+    type: uniform_float
+    lower: 0.0001
+    upper: 0.5
+    log: false
+  vf_coef:
+    type: uniform_float
+    lower: 0.01
+    upper: 0.9
+    log: false

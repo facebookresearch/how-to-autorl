@@ -1,0 +1,40 @@
+defaults:
+  - algorithm: ppo
+  - search_space: ppo
+  - override hydra/sweeper: DEHB
+  - override hydra/launcher: submitit_slurm
+
+hydra:
+  sweeper: 
+    dehb_kwargs:
+      mutation_factor: 0.2
+      max_budget: ${algorithm.total_timesteps}
+      min_budget: 1e3
+      cost: "steps"
+      wandb_project: autorl-benchmarks
+      eta: 1.9
+      seeds: false
+    slurm: true
+    slurm_timeout: 360
+    search_space: ${search_space}
+    total_cost: 10000000
+    budget_variable: algorithm.total_timesteps
+    n_jobs: 1050
+  run:
+    dir: tuning_output/dehb_seed_${seed}_${algorithm.agent_class}_${env_name}
+  launcher:
+    partition: learnfair
+    mem_gb: 10
+    timeout_min: 1720
+  sweep:
+    dir: tuning_output/dehb_seed_${seed}_${algorithm.agent_class}_${env_name}
+
+log_dir: ./agent_logs
+env_name: Pendulum-v1
+load: false
+save: false
+reward_curves: false
+seed: 0
+wandb: false
+wandb_tags: [base]
+logging_interval: 1e5

@@ -1,0 +1,69 @@
+hyperparameters:
+  lr:
+    type: uniform_float
+    lower: 0.000001
+    upper: 0.01
+    log: true
+  eps:
+    type: uniform_float
+    lower: 0.000001
+    upper: 0.01
+    log: true
+  alpha:
+    type: uniform_float
+    lower: 0.8
+    upper: 0.9999
+    log: false
+  gae_lambda:
+    type: uniform_float
+    lower: 0.8
+    upper: 0.9999
+    log: false
+  clip_param:
+    type: uniform_float
+    lower: 0.0
+    upper: 0.5
+    log: false
+  use_nonlinear_clf:
+    type: categorical
+    choices: [True, False]
+  entropy_coef:
+    type: uniform_float
+    lower: 0.0
+    upper: 0.5
+    log: false
+  value_loss_coef:
+    type: uniform_float
+    lower: 0.0
+    upper: 1.0
+    log: false
+  adv_loss_coef:
+    type: uniform_float
+    lower: 0.0
+    upper: 1.0
+    log: false
+  order_loss_coef:
+    type: uniform_float
+    lower: 0.0
+    upper: 0.1
+    log: false
+  max_grad_norm:
+    type: uniform_float
+    lower: 0.0
+    upper: 1.0
+    log: false
+  ppo_epoch:
+    type: uniform_int
+    lower: 1
+    upper: 5
+    log: false
+  value_freq:
+    type: uniform_int
+    lower: 1
+    upper: 5
+    log: false
+  value_epoch:
+    type: uniform_int
+    lower: 1
+    upper: 10
+    log: false

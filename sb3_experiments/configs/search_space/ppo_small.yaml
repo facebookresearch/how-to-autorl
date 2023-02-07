@@ -1,0 +1,16 @@
+hyperparameters:
+  algorithm.model_kwargs.learning_rate:
+    type: uniform_float
+    lower: 0.000001
+    upper: 0.01
+    log: true
+  algorithm.model_kwargs.n_epochs:
+    type: uniform_int
+    lower: 5
+    upper: 20
+    log: false
+  algorithm.model_kwargs.ent_coef:
+    type: uniform_float
+    lower: 0.0
+    upper: 0.5
+    log: false

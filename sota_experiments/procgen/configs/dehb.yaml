@@ -1,0 +1,67 @@
+defaults:
+  - search_space: idaac
+  - override hydra/sweeper: DEHB
+  - override hydra/launcher: submitit_slurm
+
+hydra:
+  sweeper:
+    dehb_kwargs:
+      mutation_factor: 0.2
+      max_budget: ${num_env_steps}
+      min_budget: 25e4
+      cost: "steps"
+      seeds: [0,1,2,3,4]
+      eta: 1.9
+    search_space: ${search_space}
+    total_cost: 800000000
+    n_jobs: 1050
+    budget_variable: num_env_steps
+    slurm: true
+    slurm_timeout: 800
+  run:
+    dir: tuning_output_dehb_large/${algo}_${env_name}_seed_${seed}
+  launcher:
+    partition: learnlab
+    mem_gb: 10
+    timeout_min: 1720
+    gpus_per_task: 1
+  sweep:
+    dir: tuning_output_dehb_large/${algo}_${env_name}_seed_${seed}
+
+save_dir: ./models/checkpoint.pt
+load_dir: null
+log_dir: ./logs
+algo: idaac
+seed: 0
+
+env_name: coinrun
+start_level: 0
+num_levels: 200
+distribution_mode: easy
+num_env_steps: 25e6
+num_processes: 64
+
+use_best_hps: false
+lr: 5e-4
+eps: 1e-5
+hidden_size: 256
+log_interval: 10
+clip_param: 0.2
+num_mini_batch: 8
+ppo_epoch: 3
+num_steps: 256
+max_grad_norm: 0.5
+value_loss_coef: 0.5
+entropy_coef: 0.01
+gae_lambda: 0.95
+gamma: 0.999
+alpha: 0.99
+no_cuda: false
+
+clf_hidden_size: 4
+order_loss_coef: 0.001
+use_nonlinear_clf: false
+
+adv_loss_coef: 0.25
+value_freq: 1
+value_epoch: 9

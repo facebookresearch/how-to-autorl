@@ -1,0 +1,24 @@
+hyperparameters:
+  algorithm.model_kwargs.learning_rate:
+    type: uniform_float
+    lower: 0.000001
+    upper: 0.01
+    log: true
+  algorithm.model_kwargs.batch_size:
+    type: categorical
+    choices: [64, 128, 256, 512]
+  algorithm.model_kwargs.gradient_steps:
+    type: uniform_int
+    lower: 1
+    upper: 10
+    log: false
+  algorithm.model_kwargs.learning_starts:
+    type: uniform_int
+    lower: 10
+    upper: 1e4
+    log: false
+  algorithm.model_kwargs.buffer_size:
+    type: uniform_int
+    lower: 5e3
+    upper: 5e7
+    log: false

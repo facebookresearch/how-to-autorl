@@ -1,0 +1,48 @@
+defaults:
+  - search_space: brax_ppo
+  - override hydra/sweeper: PBT
+  - override hydra/launcher: submitit_slurm
+
+hydra:
+  sweeper: 
+    budget: ${num_timesteps}
+    budget_variable: num_timesteps
+    loading_variable: load
+    saving_variable: save
+    optimizer: bgt
+    pbt_kwargs:
+      population_size: 16
+      patience: 20
+      init_size: 48
+      quantiles: 0.125
+      config_interval: 1000000
+      seeds: [0,1,2,3,4]
+    search_space: ${search_space}
+  run:
+    dir: tuning_output_bgt_64/${env_name}_seed_${seed}
+  launcher:
+    partition: learnlab
+    mem_gb: 10
+    gpus_per_task: 1
+    timeout_min: 1720
+  sweep:
+    dir: tuning_output_bgt_64/${env_name}_seed_${seed}
+
+env_name: ant
+episode_length: 1000
+num_timesteps: 30000000
+unroll_length: 5
+batch_size: 1024
+num_minibatches: 6
+num_update_epochs: 4
+reward_scaling: 0.1
+entropy_cost: 1e-2
+learning_rate: 3e-4
+gae_lambda: 0.95
+epsilon: 0.3
+vf_coef: 0.5
+outdir: '.'
+seed: 0
+save: 'checkpoint.pt'
+load: null
+use_cuda: false

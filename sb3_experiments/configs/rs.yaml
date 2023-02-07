@@ -1,0 +1,45 @@
+defaults:
+  - algorithm: ppo
+  - override hydra/sweeper: optuna
+  - override hydra/sweeper/sampler: random
+  - override hydra/launcher: submitit_slurm
+
+hydra:
+  sweeper: 
+    sampler:
+      seed: ${seed}
+    direction: minimize
+    study_name: hb-rs-${algorithm}-${env_name}
+    n_trials: 10
+    n_jobs: 100
+    params: 
+      algorithm.model_kwargs.learning_rate: tag(log, interval(0.000001, 0.01))
+      algorithm.model_kwargs.batch_size: choice(16, 32, 64, 128)
+      algorithm.model_kwargs.n_steps: choice(256, 512, 1024, 2048, 4096)
+      algorithm.model_kwargs.n_epochs: range(5, 20)
+      algorithm.model_kwargs.gae_lambda: interval(0.8, 0.9999)
+      algorithm.model_kwargs.clip_range: interval(0.0, 0.5)
+      algorithm.model_kwargs.clip_range_vf: interval(0.0, 0.5)
+      algorithm.model_kwargs.normalize_advantage: choice(True, False)
+      algorithm.model_kwargs.ent_coef: interval(0.0, 0.5)
+      algorithm.model_kwargs.vf_coef: interval(0.0, 1.0)
+      algorithm.model_kwargs.max_grad_norm: interval(0.0, 1.0)
+  run:
+    dir: tuning_output/rs_seed_${seed}_${algorithm.agent_class}_${env_name}_seeds_3
+  launcher:
+    partition: learnlab
+    mem_gb: 10
+    timeout_min: 1720
+  sweep:
+    dir: tuning_output/rs_seed_${seed}_${algorithm.agent_class}_${env_name}_seeds_3
+
+log_dir: ./agent_logs
+env_name: Pendulum-v1
+load: false
+save: ./checkpoint.pt
+reward_curves: false
+seed: 0
+wandb: false
+wandb_tags: [base]
+logging_interval: 1e5
+tuning_seeds: [0,1,2]

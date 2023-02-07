@@ -1,0 +1,28 @@
+defaults:
+  - algorithm: ppo
+  - override hydra/launcher: submitit_slurm
+
+hydra:
+  run:
+    dir: additional_sweeps/${env_name}_${hydra.job.override_dirname}/seed=${seed}
+  job:
+    config:
+      override_dirname:
+        exclude_keys:
+          - seed
+  launcher:
+    partition: learnfair
+    mem_gb: 10
+    timeout_min: 1720
+  sweep:
+    dir: additional_sweeps/${env_name}_${hydra.job.override_dirname}/seed=${seed}
+
+log_dir: ./agent_logs
+env_name: Pendulum-v1
+load: false
+save: false
+reward_curves: false
+seed: 0
+wandb: true
+wandb_tags: [base]
+logging_interval: 1e5

@@ -1,0 +1,48 @@
+defaults:
+  - search_space: brax_ppo
+  - override hydra/sweeper: DEHB
+  - override hydra/launcher: submitit_slurm
+
+hydra:
+  sweeper:
+    dehb_kwargs:
+      mutation_factor: 0.2
+      max_budget: ${num_timesteps}
+      min_budget: 30e5
+      cost: "steps"
+      seeds: [0,1,2,3,4]
+      eta: 1.9
+    search_space: ${search_space}
+    total_cost: ${num_timesteps}
+    n_jobs: 1050
+    budget_variable: num_timesteps
+    slurm: true
+    slurm_timeout: ${hydra.launcher.timeout_min}
+  run:
+    dir: tuning_output_dehb/${env_name}_seed_${seed}
+  launcher:
+    partition: learnfair
+    mem_gb: 40
+    timeout_min: 1720
+    gpus_per_task: 1
+  sweep:
+    dir: tuning_output_dehb/${env_name}_seed_${seed}
+
+env_name: ant
+episode_length: 1000
+num_timesteps: 30000000
+unroll_length: 5
+batch_size: 1024
+num_minibatches: 6
+num_update_epochs: 4
+reward_scaling: 0.1
+entropy_cost: 1e-2
+learning_rate: 3e-4
+gae_lambda: 0.95
+epsilon: 0.3
+vf_coef: 0.5
+outdir: '.'
+seed: 0
+save: 'checkpoint.pt'
+load: null
+use_cuda: false

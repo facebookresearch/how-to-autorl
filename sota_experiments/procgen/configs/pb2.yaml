@@ -1,0 +1,65 @@
+defaults:
+  - search_space: idaac
+  - override hydra/sweeper: PBT
+  - override hydra/launcher: submitit_slurm
+
+hydra:
+  sweeper: 
+    budget: ${num_env_steps}
+    budget_variable: num_env_steps
+    loading_variable: load_dir
+    saving_variable: save_dir
+    optimizer: pb2
+    pbt_kwargs:
+      population_size: 16
+      num_config_changes: 20
+      categorical_mutation: mix
+      seeds: [0,1,2,3,4]
+    search_space: ${search_space}
+  run:
+    dir: tuning_output_pb2/${algo}_${env_name}_seed_${seed}
+  launcher:
+    partition: learnlab
+    mem_gb: 10
+    gpus_per_task: 1
+    timeout_min: 1720
+  sweep:
+    dir: tuning_output_pb2/${algo}_${env_name}_seed_${seed}
+
+save_dir: ./models
+load_dir: null
+log_dir: ./logs
+algo: idaac
+seed: 0
+
+env_name: coinrun
+start_level: 0
+num_levels: 200
+distribution_mode: easy
+num_env_steps: 25e6
+num_processes: 64
+
+use_best_hps: false
+lr: 5e-4
+eps: 1e-5
+hidden_size: 256
+log_interval: 10
+clip_param: 0.2
+num_mini_batch: 8
+ppo_epoch: 3
+num_steps: 256
+max_grad_norm: 0.5
+value_loss_coef: 0.5
+entropy_coef: 0.01
+gae_lambda: 0.95
+gamma: 0.999
+alpha: 0.99
+no_cuda: false
+
+clf_hidden_size: 4
+order_loss_coef: 0.001
+use_nonlinear_clf: false
+
+adv_loss_coef: 0.25
+value_freq: 1
+value_epoch: 9

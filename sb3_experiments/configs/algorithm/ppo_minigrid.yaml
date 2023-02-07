@@ -1,0 +1,19 @@
+agent_class: PPO
+total_timesteps: 1e6
+n_eval_episodes: 5
+policy_model: CnnPolicy
+model_kwargs:
+  learning_rate: 7e-4
+  batch_size: 64
+  gamma: 0.999
+  n_steps: 256
+  n_epochs: 4
+  gae_lambda: 0.95
+  clip_range: 0.2
+  clip_range_vf: null
+  normalize_advantage: True
+  ent_coef: 0.01
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+  use_sde: False
+  sde_sample_freq: 4

@@ -1,0 +1,8 @@
+algorithm.model_kwargs.learning_rate: tag(log, interval(0.000001, 0.01))
+algorithm.model_kwargs.batch_size: choice(64, 128, 256, 512)
+algorithm.model_kwargs.gradient_steps: range(1, 10)
+algorithm.model_kwargs.train_freq: range(1, 1e3)
+algorithm.model_kwargs.learning_starts: range(1, 1e4)
+algorithm.model_kwargs.buffer_size: range(5e3, 5e7)
+algorithm.model_kwargs.tau: interval(0.01, 1.0)
+
