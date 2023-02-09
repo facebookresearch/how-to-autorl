@@ -1,0 +1,1 @@
+python run_incumbent.py --multirun 'seed=range(5,15)' --config-name=$1 
