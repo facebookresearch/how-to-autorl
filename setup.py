@@ -14,6 +14,7 @@ def read_file(filepath: str) -> str:
 extras_require = {
     "all": [
         "GPy",
+        "gpytorch",
         "scipy",
         "sklearn",
         "scikit-learn",

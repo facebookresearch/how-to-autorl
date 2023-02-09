@@ -10,9 +10,13 @@ Currently included:
 We recommend starting in the examples directory to see how the sweepers work.
 Assume that everything here is a *minimizer*! You can maximize instead by passing 'maximize=true' as a sweeper kwarg.
 
-Open TODOs:
-- Update/write docstrings
-- explore if lazy imports can even work and if not how to deal with all the dependencies
+## Installation
+We recommend creating a conda environment to install the sweeper in:
+```bash
+conda create -n autorl-sweepers python==3.9
+conda activate autorl-sweepers
+pip install -e .[all] 
+```
 
 ## Usage in your own project
 In your yaml-configuration file, set `hydra/sweeper` to the sweeper name, e.g. `DEHB`:
