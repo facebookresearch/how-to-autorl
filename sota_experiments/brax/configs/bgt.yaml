@@ -10,6 +10,7 @@ hydra:
     loading_variable: load
     saving_variable: save
     optimizer: bgt
+    n_jobs: 2048
     pbt_kwargs:
       population_size: 16
       patience: 20

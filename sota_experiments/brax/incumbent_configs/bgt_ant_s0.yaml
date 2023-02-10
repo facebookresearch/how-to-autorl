@@ -1,0 +1,32 @@
+defaults:
+  - override hydra/launcher: submitit_slurm
+
+hydra:
+  run:
+    dir: ./incumbents/${env_name}_seed_${seed}
+  sweep:
+    dir: ./incumbents/${env_name}_seed_${seed}
+  launcher:
+    partition: learnfair
+    mem_gb: 40
+    gpus_per_task: 1
+    timeout_min: 1720
+
+env_name: ant
+episode_length: 1000
+num_timesteps: '30000000'
+unroll_length: 5
+batch_size: 1024
+num_minibatches: 6
+num_update_epochs: 4
+reward_scaling: 0.1
+entropy_cost: 0.01
+learning_rate: 0.0003
+gae_lambda: 0.95
+epsilon: 0.3
+vf_coef: 0.5
+outdir: .
+seed: '0'
+save: checkpoint.pt
+load: null
+use_cuda: false

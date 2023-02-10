@@ -14,7 +14,7 @@ hydra:
       eta: 1.9
     search_space: ${search_space}
     total_cost: ${num_timesteps}
-    n_jobs: 1050
+    n_jobs: 2048
     budget_variable: num_timesteps
     slurm: true
     slurm_timeout: ${hydra.launcher.timeout_min}
