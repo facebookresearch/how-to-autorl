@@ -1,0 +1,16 @@
+agent_class: DQN
+total_timesteps: 1e6
+n_eval_episodes: 5
+policy_model: CnnPolicy
+model_kwargs:
+  learning_rate: 0.0024247034452855596
+  batch_size: 16
+  tau: 1.0
+  gamma: 0.999
+  learning_starts: 2354
+  train_freq: 75
+  gradient_steps: 1
+  exploration_fraction: 0.44457483291625977
+  exploration_initial_eps: 0.9716464281082153
+  exploration_final_eps: 0.14344772696495056
+  buffer_size: 14432082

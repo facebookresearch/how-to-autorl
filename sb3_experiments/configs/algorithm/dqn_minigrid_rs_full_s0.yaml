@@ -1,0 +1,16 @@
+agent_class: DQN
+total_timesteps: 1000000.0
+n_eval_episodes: 5
+policy_model: MlpPolicy
+model_kwargs:
+  learning_rate: 0.00015676677195506063
+  batch_size: 32
+  tau: 1.0
+  gamma: 0.9
+  learning_starts: 9637
+  train_freq: 892
+  gradient_steps: 5
+  exploration_fraction: 0.35901873635434767
+  exploration_initial_eps: 0.8958625190413323
+  exploration_final_eps: 0.106250089030828
+  buffer_size: 19175159

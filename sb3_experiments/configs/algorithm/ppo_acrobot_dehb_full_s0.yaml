@@ -1,0 +1,20 @@
+agent_class: PPO
+total_timesteps: 1e6
+n_eval_episodes: 5
+policy_model: MlpPolicy
+num_minibatches: 8
+model_kwargs:
+  learning_rate: 3.900417137078314e-05
+  batch_size: 32
+  gamma: 0.9
+  n_steps: 256
+  n_epochs: 6
+  gae_lambda: 0.8731015607909363
+  clip_range: 0.30264556817732363
+  clip_range_vf: 0.43867955324706
+  normalize_advantage: True
+  ent_coef: 0.40256218499884244
+  vf_coef: 0.7761940266428928
+  max_grad_norm: 0.6442663695835221
+  use_sde: False
+  sde_sample_freq: 4

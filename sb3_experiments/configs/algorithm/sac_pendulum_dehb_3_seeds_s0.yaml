@@ -1,0 +1,15 @@
+agent_class: SAC
+total_timesteps: 1e6
+n_eval_episodes: 5
+policy_model: MlpPolicy
+model_kwargs:
+  learning_rate: 0.005067997674877708
+  batch_size: 128
+  tau: 0.08159993662116431
+  gamma: 0.99
+  learning_starts: 3639
+  buffer_size: 19158902
+  train_freq: 64
+  gradient_steps: 6
+  use_sde: False
+  sde_sample_freq: -1

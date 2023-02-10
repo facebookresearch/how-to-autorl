@@ -1,0 +1,13 @@
+agent_class: TD3
+total_timesteps: 1e5
+n_eval_episodes: 5
+policy_model: MlpPolicy
+model_kwargs:
+  learning_rate: 0.001
+  batch_size: 100
+  tau: 0.005
+  gamma: 0.99
+  learning_starts: 100
+  train_freq: 100
+  gradient_steps: -1
+  buffer_size: 1000000
