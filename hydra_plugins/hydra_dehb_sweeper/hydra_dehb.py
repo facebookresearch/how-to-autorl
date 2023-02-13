@@ -105,9 +105,7 @@ class HydraDEHB(dehb.DEHB):
             )
         if self.wandb_project:
             wandb_config = OmegaConf.to_container(global_config, resolve=False, throw_on_missing=False)
-            wandb_config = OmegaConf.to_container(
-                global_config, resolve=False, throw_on_missing=False
-            )
+            wandb.init(
                 project=self.wandb_project,
                 tags=wandb_tags,
                 config=wandb_config,
