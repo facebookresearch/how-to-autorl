@@ -1,3 +1,4 @@
+# A lot of this code was adapted from the original DEHB repository: https://github.com/automl/dehb
 import logging
 import os
 import time
@@ -88,9 +89,7 @@ class HydraDEHB(dehb.DEHB):
             for i in range(len(self.global_overrides)):
                 if self.global_overrides[i].split("=")[0] == "seed":
                     self.global_overrides = self.global_overrides[:i] + self.global_overrides[i + 1 :]
-                    self.global_overrides = (
-                        self.global_overrides[:i] + self.global_overrides[i + 1 :]
-                    )
+                    break
         self.current_total_steps = 0
         self.opt_time = 0
         self.maximize = maximize
@@ -100,9 +99,7 @@ class HydraDEHB(dehb.DEHB):
             reward_objective = Objective("reward", optimize="lower")
             deepcave_path = os.path.join(self.output_path, "deepcave_logs")
             self.deepcave_recorder = Recorder(self.cs, objectives=[reward_objective], save_path=deepcave_path)
-            self.deepcave_recorder = Recorder(
-                self.cs, objectives=[reward_objective], save_path=deepcave_path
-            )
+        self.wandb_project = wandb_project
         if self.wandb_project:
             wandb_config = OmegaConf.to_container(global_config, resolve=False, throw_on_missing=False)
             wandb.init(
@@ -167,31 +164,21 @@ class HydraDEHB(dehb.DEHB):
             remaining = (len(self.traj), fevals, "function evaluation(s) done.")
         elif brackets is not None:
             _suffix = "bracket(s) started; # active brackets: {}.".format(len(self.active_brackets))
-            _suffix = "bracket(s) started; # active brackets: {}.".format(
-                len(self.active_brackets)
-            )
+            remaining = (self.iteration_counter + 1, brackets, _suffix)
         elif total_time_cost is not None:
             elapsed = np.format_float_positional(time.time() - self.start, precision=2)
             remaining = (elapsed, total_time_cost, "seconds elapsed.")
         else:
             remaining = (int(self.current_total_steps) + 1, total_cost, "training steps run.")
-            remaining = (
-                int(self.current_total_steps) + 1,
-                total_cost,
-                "training steps run.",
-            )
+        self.logger.info("{}/{} {}".format(remaining[0], remaining[1], remaining[2]))
 
     def _is_run_budget_exhausted(self, fevals=None, brackets=None, total_cost=None, total_time_cost=None):
-    def _is_run_budget_exhausted(
-        self, fevals=None, brackets=None, total_cost=None, total_time_cost=None
-    ):
+        """Checks if the DEHB run should be terminated or continued"""
         delimiters = [fevals, brackets, total_cost, total_time_cost]
         delim_sum = sum(x is not None for x in delimiters)
         if delim_sum == 0:
             raise ValueError("Need one of 'fevals', 'brackets' or 'total_cost' as budget for DEHB to run.")
-            raise ValueError(
-                "Need one of 'fevals', 'brackets' or 'total_cost' as budget for DEHB to run."
-            )
+        if fevals is not None:
             if len(self.traj) >= fevals:
                 return True
         elif brackets is not None:
@@ -199,19 +186,13 @@ class HydraDEHB(dehb.DEHB):
                 for bracket in self.active_brackets:
                     # waits for all brackets < iteration_counter to finish by collecting results
                     if bracket.bracket_id < self.iteration_counter and not bracket.is_bracket_done():
-                    if (
-                        bracket.bracket_id < self.iteration_counter
-                        and not bracket.is_bracket_done()
-                    ):
+                        return False
                 return True
         elif total_time_cost is not None:
             if time.time() - self.start >= total_time_cost:
                 return True
             if len(self.runtime) > 0 and self.runtime[-1] - self.start >= total_time_cost:
-            if (
-                len(self.runtime) > 0
-                and self.runtime[-1] - self.start >= total_time_cost
-            ):
+                return True
         else:
             if self.current_total_steps >= total_cost:
                 return True
@@ -255,9 +236,7 @@ class HydraDEHB(dehb.DEHB):
             )
         while True:
             if self._is_run_budget_exhausted(fevals, num_brackets, total_cost, total_time_cost):
-            if self._is_run_budget_exhausted(
-                fevals, num_brackets, total_cost, total_time_cost
-            ):
+                break
             bracket = None
             opt_time_start = time.time()
             overrides = []
@@ -302,9 +281,7 @@ class HydraDEHB(dehb.DEHB):
                 # Add more jobs if current bracket isn't waiting on results and also has jobs left
                 space_in_bracket = (
                     bracket.sh_bracket[budget] > 0 and not bracket.previous_rung_waits() and bracket.is_pending()
-                    bracket.sh_bracket[budget] > 0
-                    and not bracket.previous_rung_waits()
-                    and bracket.is_pending()
+                )
                 while space_in_bracket and len(overrides) < jobs_left:
                     vconfig, parent_id = self._acquire_config(bracket, budget)
                     config = self.vector_to_configspace(vconfig)
@@ -325,15 +302,13 @@ class HydraDEHB(dehb.DEHB):
                         names += ["hydra.launcher.timeout_min"]
                         optimized_timeout = (
                             self.slurm_timeout * 1 / (self.max_budget // budget) + 0.1 * self.slurm_timeout
-                            self.slurm_timeout * 1 / (self.max_budget // budget)
-                            + 0.1 * self.slurm_timeout
+                        )
                         values += [int(optimized_timeout)]
                     if self.seeds:
                         for s in self.seeds:
                             job_overrides = tuple(self.global_overrides) + tuple(
                                 f"{name}={val}" for name, val in zip(names + ["seed"], values + [s])
-                                f"{name}={val}"
-                                for name, val in zip(names + ["seed"], values + [s])
+                            )
                             overrides.append(job_overrides)
                     else:
                         job_overrides = tuple(self.global_overrides) + tuple(
@@ -352,9 +327,7 @@ class HydraDEHB(dehb.DEHB):
                 # Make sure that all seeds of a config are launched at the same time so we can aggregate
                 if self.seeds:
                     index = (index // len(self.seeds)) * len(self.seeds) // len(self.seeds)
-                    index = (
-                        (index // len(self.seeds)) * len(self.seeds) // len(self.seeds)
-                    )
+                    launching_jobs = bracket_jobs[:index]
                     bracket_jobs = bracket_jobs[index:]
                     to_launch = overrides[: index * len(self.seeds)]
                     overrides = overrides[index * len(self.seeds) :]
@@ -391,10 +364,7 @@ class HydraDEHB(dehb.DEHB):
                     for i in range(0, len(launching_jobs)):
                         launching_jobs[i]["fitness"] = np.mean(
                             [res[i * len(self.seeds) + j].return_value for j in range(len(self.seeds))]
-                            [
-                                res[i * len(self.seeds) + j].return_value
-                                for j in range(len(self.seeds))
-                            ]
+                        )
                         if self.maximize:
                             launching_jobs[i]["fitness"] = -launching_jobs[i]["fitness"]
                         self.futures.append(launching_jobs[i])
@@ -417,26 +387,14 @@ class HydraDEHB(dehb.DEHB):
                 if self.deepcave:
                     for job in launching_jobs:
                         self.deepcave_recorder.start(config=job["cs_config"], budget=job["budget"])
-                        self.deepcave_recorder.start(
-                            config=job["cs_config"], budget=job["budget"]
-                        )
-                        self.deepcave_recorder.end(
-                            costs=job["fitness"],
-                            config=job["cs_config"],
-                            budget=job["budget"],
-                        )
+                        self.deepcave_recorder.end(costs=job["fitness"], config=job["cs_config"], budget=job["budget"])
+
                 opt_time_start = time.time()
                 self._fetch_results_from_workers()
                 if verbose:
                     self._verbosity_runtime(fevals, brackets, total_cost, total_time_cost)
-                    self._verbosity_runtime(
-                        fevals, brackets, total_cost, total_time_cost
-                    )
-                    log.info(
-                        "Best score seen/Incumbent score: {}".format(
-                            np.round(self.inc_score, decimals=2)
-                        )
-                    )
+                    log.info("Best score seen/Incumbent score: {}".format(np.round(self.inc_score, decimals=2)))
+                self._verbosity_debug()
                 if self.inc_config is not None:
                     self._save_incumbent(name)
                 if save_history and self.history is not None:
@@ -449,9 +407,7 @@ class HydraDEHB(dehb.DEHB):
 
         if verbose and len(self.futures) > 0:
             log.info("DEHB optimisation over! Waiting to collect results from workers running...")
-            log.info(
-                "DEHB optimisation over! Waiting to collect results from workers running..."
-            )
+        while len(self.futures) > 0:
             self._fetch_results_from_workers()
             if save_intermediate and self.inc_config is not None:
                 self._save_incumbent(name)
@@ -464,9 +420,7 @@ class HydraDEHB(dehb.DEHB):
             log.info(
                 "End of optimisation! Total duration: {}s; Optimization overhead: {}s; Total fevals: {}\n".format(
                     np.round(time_taken, decimals=2), np.round(self.opt_time, decimals=2), len(self.traj)
-                    np.round(time_taken, decimals=2),
-                    np.round(self.opt_time, decimals=2),
-                    len(self.traj),
+                )
             )
             log.info("Incumbent score: {}".format(np.round(self.inc_score, decimals=2)))
             log.info("Incumbent config: ")
