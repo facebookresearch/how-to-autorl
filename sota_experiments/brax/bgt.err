@@ -1,0 +1,36 @@
+Traceback (most recent call last):
+  File "/private/home/raileanu/how-to-autorl/sota_experiments/brax/run_bgt.py", line 17, in <module>
+    run_rs()
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/main.py", line 90, in decorated_main
+    _run_hydra(
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/utils.py", line 332, in _run_hydra
+    search_path = create_automatic_config_search_path(
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/utils.py", line 183, in create_automatic_config_search_path
+    return create_config_search_path(search_path_dir)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/utils.py", line 196, in create_config_search_path
+    search_path_plugins = Plugins.instance().discover(SearchPathPlugin)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/core/plugins.py", line 46, in instance
+    ret = Singleton.instance(Plugins, *args, **kwargs)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/core/singleton.py", line 17, in instance
+    return cls(*args, **kwargs)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/core/singleton.py", line 13, in __call__
+    cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/core/plugins.py", line 54, in __init__
+    self._initialize()
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/core/plugins.py", line 71, in _initialize
+    scanned_plugins, self.stats = self._scan_all_plugins(modules=top_level)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/core/plugins.py", line 190, in _scan_all_plugins
+    loaded_mod = m.load_module(modname)
+  File "<frozen importlib._bootstrap_external>", line 529, in _check_name_wrapper
+  File "<frozen importlib._bootstrap_external>", line 1029, in load_module
+  File "<frozen importlib._bootstrap_external>", line 854, in load_module
+  File "<frozen importlib._bootstrap>", line 274, in _load_module_shim
+  File "<frozen importlib._bootstrap>", line 711, in _load
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_dehb_sweeper/dehb_sweeper_backend.py", line 18, in <module>
+    from hydra_plugins.hydra_dehb_sweeper.hydra_dehb import HydraDEHB
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_dehb_sweeper/hydra_dehb.py", line 111
+    project=self.wandb_project,
+IndentationError: unexpected indent

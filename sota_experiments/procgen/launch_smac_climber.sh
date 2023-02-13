@@ -7,7 +7,7 @@
 #SBATCH --gpus=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --output=./smac.out
-#SBATCH --partition=<partition>
+#SBATCH --partition=learnlab
 #SBATCH --time=2000
 
 python run_smac_climber.py

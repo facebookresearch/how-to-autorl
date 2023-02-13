@@ -7,7 +7,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --output=./pb2.out
-#SBATCH --partition=<partition>
+#SBATCH --partition=learnlab
 #SBATCH --time=2000
 
 python run_pb2.py --multirun seed=$SLURM_ARRAY_TASK_ID env_name=$1 clf_hidden_size=$2

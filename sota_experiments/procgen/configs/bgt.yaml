@@ -17,6 +17,7 @@ hydra:
       quantiles: 0.125
       num_config_changes: 20
       seeds: [0,1,2,3,4]
+      wandb_project: "the_eimer/rl-tuning"
     search_space: ${search_space}
   run:
     dir: tuning_output_bgt_big/${algo}_${env_name}_seed_${seed}

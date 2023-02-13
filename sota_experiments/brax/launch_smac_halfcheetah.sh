@@ -6,7 +6,7 @@
 #SBATCH --nodes=1
 #SBATCH --gpus=1
 #SBATCH --output=./smac.out
-#SBATCH --partition=<partition>
+#SBATCH --partition=learnlab
 #SBATCH --time=2000
 
 python run_smac_halfcheetah.py
