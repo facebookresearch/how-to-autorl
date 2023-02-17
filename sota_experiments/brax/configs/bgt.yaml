@@ -10,7 +10,6 @@ hydra:
     loading_variable: load
     saving_variable: save
     optimizer: bgt
-    n_jobs: 2048
     pbt_kwargs:
       population_size: 16
       patience: 20
@@ -18,7 +17,7 @@ hydra:
       quantiles: 0.125
       config_interval: 1000000
       seeds: [0,1,2,3,4]
-      wandb_project: "the_eimer/rl-tuning"
+      wandb_project: "autorl-icml23"
     search_space: ${search_space}
   run:
     dir: tuning_output_bgt_64/${env_name}_seed_${seed}

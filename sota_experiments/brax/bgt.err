@@ -1,36 +1,162 @@
+ /private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/defaults_list.py:251: UserWarning:In 'bgt': Defaults list is missing `_self_`. See https://hydra.cc/docs/upgrades/1.0_to_1.1/default_composition_order for more information
+wandb: Currently logged in as: raileanu-roberta. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.10 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.5
+wandb: Run data is saved locally in /private/home/raileanu/how-to-autorl/sota_experiments/brax/wandb/run-20230215_034548-1vcux6ym
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run expressive-flower-22
+wandb: ⭐️ View project at https://wandb.ai/raileanu-roberta/autorl-icml23
+wandb: 🚀 View run at https://wandb.ai/raileanu-roberta/autorl-icml23/runs/1vcux6ym
 Traceback (most recent call last):
-  File "/private/home/raileanu/how-to-autorl/sota_experiments/brax/run_bgt.py", line 17, in <module>
-    run_rs()
-  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/main.py", line 90, in decorated_main
-    _run_hydra(
-  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/utils.py", line 332, in _run_hydra
-    search_path = create_automatic_config_search_path(
-  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/utils.py", line 183, in create_automatic_config_search_path
-    return create_config_search_path(search_path_dir)
-  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/utils.py", line 196, in create_config_search_path
-    search_path_plugins = Plugins.instance().discover(SearchPathPlugin)
-  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/core/plugins.py", line 46, in instance
-    ret = Singleton.instance(Plugins, *args, **kwargs)
-  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/core/singleton.py", line 17, in instance
-    return cls(*args, **kwargs)
-  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/core/singleton.py", line 13, in __call__
-    cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/core/plugins.py", line 54, in __init__
-    self._initialize()
-  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/core/plugins.py", line 71, in _initialize
-    scanned_plugins, self.stats = self._scan_all_plugins(modules=top_level)
-  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/core/plugins.py", line 190, in _scan_all_plugins
-    loaded_mod = m.load_module(modname)
-  File "<frozen importlib._bootstrap_external>", line 529, in _check_name_wrapper
-  File "<frozen importlib._bootstrap_external>", line 1029, in load_module
-  File "<frozen importlib._bootstrap_external>", line 854, in load_module
-  File "<frozen importlib._bootstrap>", line 274, in _load_module_shim
-  File "<frozen importlib._bootstrap>", line 711, in _load
-  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
-  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
-  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
-  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_dehb_sweeper/dehb_sweeper_backend.py", line 18, in <module>
-    from hydra_plugins.hydra_dehb_sweeper.hydra_dehb import HydraDEHB
-  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_dehb_sweeper/hydra_dehb.py", line 111
-    project=self.wandb_project,
-IndentationError: unexpected indent
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/utils.py", line 213, in run_and_report
+    return func()
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/utils.py", line 461, in <lambda>
+    lambda: hydra.multirun(
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/hydra.py", line 162, in multirun
+    ret = sweeper.sweep(arguments=task_overrides)
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/pbt_sweeper.py", line 27, in sweep
+    return self.sweeper.sweep(arguments)
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/pbt_sweeper_backend.py", line 161, in sweep
+    incumbent = pbt.run(verbose=True)
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/hydra_pbt.py", line 637, in run
+    self.record_iteration(performances, configs)
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/hydra_bgt.py", line 507, in record_iteration
+    wandb.log("iteration", self.iteration)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 292, in wrapper
+    return func(self, *args, **kwargs)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 255, in wrapper
+    return func(self, *args, **kwargs)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 1609, in log
+    self._log(data=data, step=step, commit=commit)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 1386, in _log
+    raise ValueError("wandb.log must be passed a dictionary")
+ValueError: wandb.log must be passed a dictionary
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: Synced blazing-romance-21: https://wandb.ai/raileanu-roberta/autorl-icml23/runs/1qy9dndx
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20230215_031003-1qy9dndx/logs
+Traceback (most recent call last):
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/utils.py", line 213, in run_and_report
+    return func()
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/utils.py", line 461, in <lambda>
+    lambda: hydra.multirun(
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/hydra.py", line 162, in multirun
+    ret = sweeper.sweep(arguments=task_overrides)
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/pbt_sweeper.py", line 27, in sweep
+    return self.sweeper.sweep(arguments)
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/pbt_sweeper_backend.py", line 161, in sweep
+    incumbent = pbt.run(verbose=True)
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/hydra_pbt.py", line 633, in run
+    overrides, configs = self.select_configs(performances, configs)
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/hydra_bgt.py", line 824, in select_configs
+    overrides, configs = super().select_configs(performances, old_configs)
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/hydra_pbt.py", line 422, in select_configs
+    return self.get_initial_configs()
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/hydra_bgt.py", line 591, in get_initial_configs
+    init_results, _ = self.run_configs(init_overrides)
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/hydra_pbt.py", line 372, in run_configs
+    res = self.launcher.launch(overrides, initial_job_idx=self.job_idx)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra_plugins/hydra_submitit_launcher/submitit_launcher.py", line 146, in launch
+    return [j.results()[0] for j in jobs]
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra_plugins/hydra_submitit_launcher/submitit_launcher.py", line 146, in <listcomp>
+    return [j.results()[0] for j in jobs]
+  File "/private/home/raileanu/.local/lib/python3.9/site-packages/submitit/core/core.py", line 289, in results
+    outcome, result = self._get_outcome_and_result()
+  File "/private/home/raileanu/.local/lib/python3.9/site-packages/submitit/core/core.py", line 384, in _get_outcome_and_result
+    raise utils.UncompletedJobError("\n".join(message))
+submitit.core.utils.UncompletedJobError: Job 3778155_176 (task: 0) with path /private/home/raileanu/how-to-autorl/sota_experiments/brax/tuning_output_bgt_64/halfcheetah_seed_0/.submitit/3778155_176/3778155_176_0_result.pkl
+has not produced any output (state: TIMEOUT)
+Error stream produced:
+----------------------------------------
+ /private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/defaults_list.py:251: UserWarning:In 'bgt': Defaults list is missing `_self_`. See https://hydra.cc/docs/upgrades/1.0_to_1.1/default_composition_order for more information
+ /private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra_plugins/hydra_submitit_launcher/submitit_launcher.py:71: UserWarning:Future Hydra versions will no longer change working directory at job runtime by default.
+See https://hydra.cc/docs/next/upgrades/1.1_to_1.2/changes_to_job_working_dir/ for more information.
+ /private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/brax/jumpy.py:58: FutureWarning:jax.tree_flatten is deprecated, and will be removed in a future release. Use jax.tree_util.tree_flatten instead.
+ /private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/brax/jumpy.py:71: FutureWarning:jax.tree_unflatten is deprecated, and will be removed in a future release. Use jax.tree_util.tree_unflatten instead.
+ /private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/brax/jumpy.py:92: FutureWarning:jax.tree_flatten is deprecated, and will be removed in a future release. Use jax.tree_util.tree_flatten instead.
+ /private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/brax/jumpy.py:98: FutureWarning:jax.tree_unflatten is deprecated, and will be removed in a future release. Use jax.tree_util.tree_unflatten instead.
+ /private/home/raileanu/how-to-autorl/sota_experiments/brax/train_brax.py:232: UserWarning:The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:199.)
+submitit WARNING (2023-02-16 08:03:57,672) - Bypassing signal SIGCONT
+submitit WARNING (2023-02-16 08:03:57,674) - Caught signal SIGUSR2 on learnfair0397: this job is timed-out.
+--- Logging error ---
+Traceback (most recent call last):
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/logging/__init__.py", line 1086, in emit
+    stream.write(msg + self.terminator)
+  File "/private/home/raileanu/.local/lib/python3.9/site-packages/submitit/core/job_environment.py", line 226, in checkpoint_and_try_requeue
+    raise utils.UncompletedJobError(message)
+submitit.core.utils.UncompletedJobError: Job not requeued because: timed-out too many times.
+Call stack:
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/runpy.py", line 197, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/private/home/raileanu/.local/lib/python3.9/site-packages/submitit/core/_submit.py", line 11, in <module>
+    submitit_main()
+  File "/private/home/raileanu/.local/lib/python3.9/site-packages/submitit/core/submission.py", line 72, in submitit_main
+    process_job(args.folder)
+  File "/private/home/raileanu/.local/lib/python3.9/site-packages/submitit/core/submission.py", line 54, in process_job
+    result = delayed.result()
+  File "/private/home/raileanu/.local/lib/python3.9/site-packages/submitit/core/utils.py", line 133, in result
+    self._result = self.function(*self.args, **self.kwargs)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra_plugins/hydra_submitit_launcher/submitit_launcher.py", line 71, in __call__
+    return run_job(
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/core/utils.py", line 186, in run_job
+    ret.return_value = task_function(task_cfg)
+  File "/private/home/raileanu/how-to-autorl/sota_experiments/brax/run_bgt.py", line 11, in run_rs
+    return train_brax(cfg)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/main.py", line 79, in decorated_main
+    return task_function(cfg_passthrough)
+  File "/private/home/raileanu/how-to-autorl/sota_experiments/brax/train_brax.py", line 395, in train_brax
+    final_eval_reward = train(
+  File "/private/home/raileanu/how-to-autorl/sota_experiments/brax/train_brax.py", line 338, in train
+    loss = agent.loss(td_minibatch._asdict())
+  File "/private/home/raileanu/how-to-autorl/sota_experiments/brax/train_brax.py", line 194, in loss
+    entropy = torch.mean(self.dist_entropy(loc, scale))
+  File "/private/home/raileanu/how-to-autorl/sota_experiments/brax/train_brax.py", line 97, in dist_entropy
+    log_det_jacobian = 2 * (math.log(2) - dist - F.softplus(-2 * dist))
+  File "/private/home/raileanu/.local/lib/python3.9/site-packages/torch/_tensor.py", line 39, in wrapped
+    return f(*args, **kwargs)
+  File "/private/home/raileanu/.local/lib/python3.9/site-packages/torch/_tensor.py", line 834, in __rsub__
+    return _C._VariableFunctions.rsub(self, other)
+  File "/private/home/raileanu/.local/lib/python3.9/site-packages/submitit/core/job_environment.py", line 195, in bypass
+    self._logger.warning(f"Bypassing signal {signal.Signals(signum).name}")
+Message: 'Bypassing signal SIGCONT'
+Arguments: ()
+slurmstepd: error: *** JOB 3778452 ON learnfair0397 CANCELLED AT 2023-02-16T08:06:06 DUE TO TIME LIMIT ***
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** STEP 3778452.0 ON learnfair0397 CANCELLED AT 2023-02-16T08:06:06 DUE TO TIME LIMIT ***
+submitit WARNING (2023-02-16 08:06:07,288) - Bypassing signal SIGTERM
+submitit WARNING (2023-02-16 08:06:07,289) - Bypassing signal SIGCONT
+
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: Synced effervescent-heartthrob-19: https://wandb.ai/raileanu-roberta/autorl-icml23/runs/3dgn2r42
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20230215_031002-3dgn2r42/logs
+Traceback (most recent call last):
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/utils.py", line 213, in run_and_report
+    return func()
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/utils.py", line 461, in <lambda>
+    lambda: hydra.multirun(
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/hydra/_internal/hydra.py", line 162, in multirun
+    ret = sweeper.sweep(arguments=task_overrides)
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/pbt_sweeper.py", line 27, in sweep
+    return self.sweeper.sweep(arguments)
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/pbt_sweeper_backend.py", line 161, in sweep
+    incumbent = pbt.run(verbose=True)
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/hydra_pbt.py", line 637, in run
+    self.record_iteration(performances, configs)
+  File "/private/home/raileanu/how-to-autorl/hydra_plugins/hydra_pbt_sweeper/hydra_bgt.py", line 507, in record_iteration
+    wandb.log("iteration", self.iteration)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 292, in wrapper
+    return func(self, *args, **kwargs)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 255, in wrapper
+    return func(self, *args, **kwargs)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 1609, in log
+    self._log(data=data, step=step, commit=commit)
+  File "/private/home/raileanu/.conda/envs/autorl/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 1386, in _log
+    raise ValueError("wandb.log must be passed a dictionary")
+ValueError: wandb.log must be passed a dictionary
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+slurmstepd: error: *** JOB 3778050 ON learnfair0283 CANCELLED AT 2023-02-16T12:30:03 DUE TO TIME LIMIT ***
+slurmstepd: error: *** JOB 3778048 ON learnfair1073 CANCELLED AT 2023-02-16T13:05:50 DUE TO TIME LIMIT ***
