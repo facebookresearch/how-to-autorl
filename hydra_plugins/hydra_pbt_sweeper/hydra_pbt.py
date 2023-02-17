@@ -47,6 +47,7 @@ class HydraPBT:
         categorical_prob=0.25,
         warmstart=False,
         wandb_project=False,
+        wandb_entity=False,
         wandb_tags=["pbt"],
         deepcave=False,
         maximize=False,
@@ -176,8 +177,10 @@ class HydraPBT:
         self.wandb_project = wandb_project
         if self.wandb_project:
             wandb_config = OmegaConf.to_container(global_config, resolve=False, throw_on_missing=False)
+            assert wandb_entity, "Please provide an entity to log to W&B."
             wandb.init(
                 project=self.wandb_project,
+                entity=wandb_entity,
                 tags=wandb_tags,
                 config=wandb_config,
             )
