@@ -47,6 +47,7 @@ class HydraDEHB(dehb.DEHB):
         max_age=np.inf,
         async_strategy="immediate",
         wandb_project=False,
+        wandb_entity=False,
         wandb_tags=["dehb"],
         deepcave=False,
         maximize=False,
@@ -102,8 +103,10 @@ class HydraDEHB(dehb.DEHB):
         self.wandb_project = wandb_project
         if self.wandb_project:
             wandb_config = OmegaConf.to_container(global_config, resolve=False, throw_on_missing=False)
+            assert wandb_entity, "Please provide an entity to log to W&B."
             wandb.init(
                 project=self.wandb_project,
+                entity=wandb_entity,
                 tags=wandb_tags,
                 config=wandb_config,
             )
