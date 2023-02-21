@@ -416,14 +416,14 @@ class HydraPBT:
         List[Configuration]
             The initial configurations.
         """
-        if self.resume:
-            performances = [self.history[i]["performances"][-1] for i in range(self.population_size)]
-            old_configs = [self.history[i]["configs"][-1] for i in range(self.population_size)]
         overrides = []
         configs = []
         if self.current_steps == 0:
             return self.get_initial_configs()
         else:
+            if self.resume:
+                performances = [self.history[i]["performances"][-1] for i in range(self.population_size)]
+                old_configs = [self.history[i]["configs"][-1] for i in range(self.population_size)]
             # Check where to copy weights and where to discard
             performance_quantiles = np.quantile(performances, [self.quantiles])[0]
             worst_config_ids = [i for i in range(len(performances)) if performances[i] > performance_quantiles[1]]
