@@ -13,6 +13,7 @@ hydra:
       seeds: [0,1,2,3,4]
       eta: 1.9
       wandb_project: "autorl-icml23"
+      wandb_entity: "tnt"
     search_space: ${search_space}
     total_cost: 800000000
     n_jobs: 1050
