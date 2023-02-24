@@ -506,17 +506,19 @@ class HydraBGT(HydraPB2):
             f.write("\n")
 
         if self.wandb_project:
-            wandb.log("iteration", self.iteration)
-            wandb.log("optimization_time", time.time() - self.start)
-            wandb.log("incumbent_performance", -min(performances))
+            stats = {}
+            stats["iteration"] = self.iteration
+            stats["optimization_time"] = time.time() - self.start
+            stats["incumbent_performance"] = -min(performances)
             for i in range(self.population_size):
-                wandb.log(f"performance_{i}", -performances[i])
+                stats[f"performance_{i}"] = -performances[i])
                 for n in configs[0].keys():
-                    wandb.log(f"config_{i}_{n}", configs[i].get(n))
-            wandb.log("num_steps", self.iteration * self.config_interval)
+                    stats[f"config_{i}_{n}"] = configs[i].get(n)
+            stats["num_steps"] = self.iteration * self.config_interval
             best_config = configs[np.argmin(performances)]
             for n in best_config.keys():
-                wandb.log(f"incumbent_{n}", best_config.get(n))
+                stats[f"incumbent_{n}"] = best_config.get(n)
+            wandb.log(stats)
 
     def get_initial_configs(self, best_agents=None):
         """
