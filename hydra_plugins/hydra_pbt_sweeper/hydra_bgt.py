@@ -511,7 +511,7 @@ class HydraBGT(HydraPB2):
             stats["optimization_time"] = time.time() - self.start
             stats["incumbent_performance"] = -min(performances)
             for i in range(self.population_size):
-                stats[f"performance_{i}"] = -performances[i])
+                stats[f"performance_{i}"] = -performances[i]
                 for n in configs[0].keys():
                     stats[f"config_{i}_{n}"] = configs[i].get(n)
             stats["num_steps"] = self.iteration * self.config_interval
