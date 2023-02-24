@@ -156,9 +156,11 @@ class HydraDEHB(dehb.DEHB):
 
     def load_dehb(self, path):
         func = list(self.de.values())[0].f
+        outdir = self.output_path
         with open(path, "rb") as f:
             past_state = pickle.load(f)
         self.__dict__.update(**past_state)
+        self.output_path = outdir
         for k in self.de:
             self.de[k].f = func
 
