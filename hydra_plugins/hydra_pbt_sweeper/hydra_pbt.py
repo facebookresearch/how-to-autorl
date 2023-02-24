@@ -599,14 +599,12 @@ class HydraPBT:
         state["history"] = self.history
         state["iteration"] = self.iteration
         state["current_steps"] = self.current_steps
-        state["output_dir"] = self.output_dir
         return state
 
     def _set_state(self, state):
         self.history = state["history"]
         self.iteration = state["iteration"]
         self.current_steps = state["current_steps"]
-        self.output_dir = state["output_dir"]
 
     def run(self, verbose=False):
         """
