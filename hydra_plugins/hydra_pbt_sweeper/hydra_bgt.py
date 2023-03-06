@@ -798,9 +798,13 @@ class HydraBGT(HydraPB2):
             current = np.array([c + [self.iteration + 1] + [curr_rew_diff] for c in current]).astype(float)
             # get the hp of the best agent selected from -- this will be trust region centre
             new_config_array = self.get_config(X, self.y, ts, current, t_current, x_center=X_best)
+            new_config = CS.Configuration(self.configspace, vector=new_config_array)
         else:
-            new_config_array = self.get_config(X, self.y, ts, None, None, x_center=X_best)
-        new_config = CS.Configuration(self.configspace, vector=new_config_array)
+            try:
+                new_config_array = self.get_config(X, self.y, ts, None, None, x_center=X_best)
+                new_config = CS.Configuration(self.configspace, vector=new_config_array)
+            except:
+                new_config = super(HydraPB2, self).perturb_hps(config, None, None, None)
         self.current.append(list(new_config.values()))
         return new_config
 
@@ -940,6 +944,11 @@ class HydraBGT(HydraPB2):
         # scale the fixed dimensions to [0, 1]^d
         y = copula_standardize(deepcopy(y).ravel())
         # simply call the _create_and_select_candidates subroutine to return
+        # But first: make sure normalization produced no value errors
+        X[X <= 0.01] = 0.01
+        X[X >= 0.99] = 0.99
+        y[y <= 0.01] = 0.001
+        y[y >= 0.99] = 0.99
         next_config = self.casmo._create_and_select_candidates(
             X,
             y,
