@@ -798,6 +798,7 @@ class HydraBGT(HydraPB2):
             current = np.array([c + [self.iteration + 1] + [curr_rew_diff] for c in current]).astype(float)
             # get the hp of the best agent selected from -- this will be trust region centre
             new_config_array = self.get_config(X, self.y, ts, current, t_current, x_center=X_best)
+            new_config = CS.Configuration(self.configspace, vector=new_config_array)
         else:
             try:
                 new_config_array = self.get_config(X, self.y, ts, None, None, x_center=X_best)
