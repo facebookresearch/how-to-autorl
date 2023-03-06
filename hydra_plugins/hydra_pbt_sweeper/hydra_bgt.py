@@ -804,7 +804,7 @@ class HydraBGT(HydraPB2):
                 new_config_array = self.get_config(X, self.y, ts, None, None, x_center=X_best)
                 new_config = CS.Configuration(self.configspace, vector=new_config_array)
             except:
-                new_config = super().perturb_hps(config, None, None, None)
+                new_config = super(HydraPB2, self).perturb_hps(config, None, None, None)
         self.current.append(list(new_config.values()))
         return new_config
 
