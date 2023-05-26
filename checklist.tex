@@ -1,0 +1,63 @@
+\documentclass{article}
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+\begin{document}
+\section{Reproducibility Checklist for Reinforcement Learning Research with Hyperparameter Optimization}
+\begin{enumerate}
+    \itemsep0em 
+    \item Are there training and test settings available on your chosen domains? \\ If yes:
+    \begin{itemize}
+        \item Is only the training setting used for training? \cmark \xmark
+        \item Is only the training setting used for tuning? \cmark \xmark
+        \item Are final results reported on the test setting? \cmark \xmark
+    \end{itemize}
+    \item Hyperparameters were tuned using \texttt{$<$package-name$>$} which is based on \texttt{$<$an-optimization-method$>$}
+    \item The configuration space was:
+    \texttt{$<$algorithm-1$>$}:
+    \begin{itemize}
+        \item \texttt{$<$a-continuous-hyperparameter$>$}: (\texttt{$<$lower$>$}, \texttt{$<$upper$>$})
+        \item \texttt{$<$a-logspaced-continuous-hyperparameter$>$}: log((\texttt{$<$lower$>$}, \texttt{$<$upper$>$}))
+        \item \texttt{$<$a-discrete-hyperparameter$>$}: [\texttt{$<$lower$>$}, \texttt{$<$upper$>$}]
+        \item \texttt{$<$a-categorical-hyperparameter$>$}: {\texttt{$<$choice-a$>$}, \texttt{$<$choice-b$>$}}
+        \item ...
+    \end{itemize}
+    \texttt{$<$algorithm-2$>$}:
+    \begin{itemize}
+        \item \texttt{$<$an-additional-hyperparameter$>$}: (\texttt{$<$lower$>$}, \texttt{$<$upper$>$})
+        \item ...
+    \end{itemize}
+    \item The search space contains the same hyperparameters and search ranges wherever algorithms share hyperparameters \cmark \xmark \\ If no, why not?
+    \item The cost metric(s) optimized was/were \texttt{$<$a-cost-metric$>$}
+    \item The tuning budget was \texttt{$<$the-budget$>$}
+    \item The tuning budget was the same for all tuned methods \cmark \xmark \\ If no, why not?
+    \item If the budget is given in time: the hardware used for all tuning runs is comparable \cmark \xmark
+    \item All methods that were reported were tuned with this the methods and settings described above \cmark \xmark \\ If no, why not?
+    \item Tuning was done across $<n>$ tuning seeds which were: [$<0>$, $<1>$, $<2>$, $<3>$, $<4>$]
+    \item Testing was done across $<m>$ test seeds which were: [$<5>$, $<6>$, $<7>$, $<8>$, $<9>$]
+    \item Are all results reported on the test seeds? \cmark \xmark \\ If no, why not?
+    \item The final incumbent configurations reported were: \\ \texttt{$<$algorithm-1-env-1$>$}:
+    \begin{itemize}
+        \item \texttt{$<$a-hyperparameter$>$}: \texttt{$<$value$>$}
+        \item ...
+    \end{itemize}
+    \texttt{$<$algorithm-1-env-2$>$}:
+    \begin{itemize}
+        \item \texttt{$<$a-hyperparameter$>$}: \texttt{$<$value$>$}
+        \item ...
+    \end{itemize}
+    \texttt{$<$algorithm-2-env-1$>$}:
+    \begin{itemize}
+        \item \texttt{$<$a-hyperparameter$>$}: \texttt{$<$value$>$}
+        \item ...
+    \end{itemize}
+    \item The code for reproducing these experiments is available at: \texttt{$<$a-link$>$}
+    \item The code also includes the tuning process \cmark \xmark
+    \item Bundled with the code is an exact version of the original software environment, e.g. a conda environment file with all package versions or a docker image in case some dependencies are not conda installable \cmark \xmark
+    \item The following hardware was used in running the experiments:
+    \begin{itemize}
+        \item \texttt{$<$n$>$} \texttt{$<$gpu-types$>$}
+        \item ...
+    \end{itemize}
+\end{enumerate}
+\end{document}
