@@ -28,7 +28,7 @@ authors:
 preferred-citation:
   type: "conference-paper"
   title: "Hyperparameters in Reinforcement Learning and How to Tune Them"
-  journal: "International Conference on Machine Learning (ICML)"
+  conference: "International Conference on Machine Learning (ICML)"
   year: "2023"
   url: "https://arxiv.org/pdf/2306.01324.pdf"
 
