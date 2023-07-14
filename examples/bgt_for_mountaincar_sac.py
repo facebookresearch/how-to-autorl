@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import logging
-import gym
+import gymnasium as gym
 import hydra
 import torch
 import stable_baselines3

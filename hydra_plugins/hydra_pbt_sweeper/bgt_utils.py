@@ -1,23 +1,24 @@
 # All of this is copied/lightly adapted from the original BG-PBT code: https://github.com/xingchenwan/bgpbt
 
-import os
-import sys
-import math
-import torch
-import numpy as np
-import logging
-from copy import deepcopy
-from typing import Callable, List
 from abc import ABC, abstractmethod
+from typing import Callable, List
+
+import logging
+import math
+import os
+import pickle
+import sys
+import time
+from copy import deepcopy
 
 import ConfigSpace as CS
 import ConfigSpace.hyperparameters as CSH
+import gpytorch
+import numpy as np
+import pandas as pd
+import torch
 from ConfigSpace.util import deactivate_inactive_hyperparameters
-
-from hydra_plugins.utils.lazy_imports import lazy_import
-
-ss = lazy_import("scipy.stats")
-gpytorch = lazy_import("gpytorch")
+from scipy import stats as ss
 
 MAX_CHOLESKY_SIZE = 2000
 MIN_CUDA = 1024
@@ -236,7 +237,7 @@ def sample_discrete_neighbour(cs: CS.ConfigurationSpace, x, frozen_dims: List[in
 
     try:
         cs.check_configuration(config)
-    except ValueError as e:
+    except ValueError:
         # there seems to be a bug with ConfigSpace that raises error even when a config is valid
         # Issue #196: https://github.com/automl/ConfigSpace/issues/196
         # print(config)
@@ -795,11 +796,10 @@ class ExpCategoricalOverlap(CategoricalOverlap):
 class L1Distance(torch.nn.Module):
     """Compute L1 distance between two input vectors"""
 
-    def __init__(self, postprocess_script=gpytorch.kernels.kernel.default_postprocess_script):
+    def __init__(self):
         super().__init__()
-        self._postprocess = postprocess_script
 
-    def _dist(self, x1, x2, postprocess, x1_eq_x2=False):
+    def _dist(self, x1, x2, _, x1_eq_x2=False):
         adjustment = x1.mean(-2, keepdim=True)
         x1 = x1 - adjustment
         x2 = x2 - adjustment  # x1 and x2 should be identical in all dims except -2 at this point
@@ -811,7 +811,7 @@ class L1Distance(torch.nn.Module):
 
         # Zero out negative values
         res.clamp_min_(0)
-        return self._postprocess(res) if postprocess else res
+        return res
 
 
 class TemporalKernel(gpytorch.kernels.Kernel):
@@ -844,7 +844,6 @@ class TemporalKernel(gpytorch.kernels.Kernel):
         self.initialize(raw_eps=self.raw_eps_constraint.inverse_transform(value))
 
     def forward(self, x1, x2, diag=False, **params):
-
         dist = self.covar_dist(x1, x2, diag=diag, **params)
         time_ker = (1.0 - self.epsilon) ** (0.5 * dist)
         time_ker_diag = torch.diag(time_ker)
@@ -973,7 +972,7 @@ class Casmo4RL(HyperparameterOptimizer):
         self.use_reward = use_reward
         # save the RL learning trajectory for each run of the BO
         self.trajectories = []
-        self.f = obj_func if obj_func is not None else self._obj_func_handle
+        self.f = obj_func
 
     def restart(self):
         self.casmo._restart()
@@ -1120,23 +1119,6 @@ class Casmo4RL(HyperparameterOptimizer):
             self.cur_iters += self.batch_size
 
         return self.X, self.y
-
-    def _obj_func_handle(
-        self,
-        config: list,
-    ) -> list:
-        """use_synthetic: use the sklearn data generation to generate synthetic functions."""
-        trajectories = self.env.train_batch(
-            config,
-            exp_idx_start=self.cur_iters,
-            nums_timesteps=[self.max_timesteps] * len(config),
-            seeds=[self.seed] * len(config),
-        )
-        self.trajectories += trajectories
-        reward = [
-            -get_reward_from_trajectory(np.array(t["y"]), use_last_fraction=self.use_reward) for t in trajectories
-        ]
-        return reward
 
     def get_surrogate(self, current_tr_only=False):
         """Return the surrogate GP fitted on all the training data"""

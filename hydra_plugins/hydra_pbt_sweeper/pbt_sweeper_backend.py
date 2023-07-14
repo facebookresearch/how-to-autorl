@@ -1,26 +1,24 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-
 from __future__ import annotations
 
+from typing import List
+
 import logging
-
-from typing import cast, List
-
-import os
-import numpy as np
 import operator
+import os
 from functools import reduce
+
 from hydra.core.plugins import Plugins
 from hydra.plugins.sweeper import Sweeper
 from hydra.types import HydraContext, TaskFunction
 from hydra.utils import get_class
-from hydra_plugins.hydra_pbt_sweeper.hydra_pb2 import HydraPB2
-from hydra_plugins.hydra_pbt_sweeper.hydra_bgt import HydraBGT
-from hydra_plugins.hydra_pbt_sweeper.hydra_pbt import HydraPBT
-from hydra_plugins.utils.search_space_encoding import search_space_to_config_space
-
 from omegaconf import DictConfig, OmegaConf, open_dict
 from rich import print as printr
+
+from hydra_plugins.hydra_pbt_sweeper.hydra_bgt import HydraBGT
+from hydra_plugins.hydra_pbt_sweeper.hydra_pb2 import HydraPB2
+from hydra_plugins.hydra_pbt_sweeper.hydra_pbt import HydraPBT
+from hydra_plugins.utils.search_space_encoding import search_space_to_config_space
 
 log = logging.getLogger(__name__)
 
@@ -40,17 +38,20 @@ class PBTSweeperBackend(Sweeper):
         pbt_kwargs: DictConfig | dict = {},
     ) -> None:
         """
-        Backend for the PBT sweeper. Instantiate the sweeper with hydra and launch optimization.
+        Backend for the PBT sweeper.
+        Instantiate the sweeper with hydra and launch optimization.
 
         Parameters
         ----------
         search_space: DictConfig
-            The search space, either a DictConfig from a hydra yaml config file, or a path to a json configuration space
-            file in the format required of ConfigSpace, or already a ConfigurationSpace config space.
+            The search space, either a DictConfig from a hydra yaml config file,
+            or a path to a json configuration space file in the format required of ConfigSpace,
+            or already a ConfigurationSpace config space.
         optimizer: str
             Name of the acquisition function boil should use
         budget: int | None
-            Total budget for a single population member. This could be e.g. the total number of steps to train a single agent.
+            Total budget for a single population member.
+            This could be e.g. the total number of steps to train a single agent.
         budget_variable: str | None
             Name of the argument controlling the budget, e.g. num_steps.
         loading_variable: str | None
@@ -129,7 +130,7 @@ class PBTSweeperBackend(Sweeper):
 
         self.launcher.global_overrides = arguments
         if len(arguments) == 0:
-            log.info(f"Sweep doesn't override default config.")
+            log.info("Sweep doesn't override default config.")
         else:
             log.info(f"Sweep overrides: {' '.join(arguments)}")
 
@@ -139,6 +140,8 @@ class PBTSweeperBackend(Sweeper):
             opt_class = HydraPB2
         elif self.optimizer == "bgt":
             opt_class = HydraBGT
+        elif self.optimizer == "pbt":
+            opt_class = HydraPBT
         else:
             log.info("Optimizer unknown, defaulting to PBT")
             opt_class = HydraPBT

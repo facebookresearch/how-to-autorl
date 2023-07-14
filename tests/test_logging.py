@@ -1,10 +1,12 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import os
 import shutil
-from utils import run_short_dehb, run_short_pbt
+
 from omegaconf import OmegaConf
+
 from hydra_plugins.hydra_dehb_sweeper.hydra_dehb import HydraDEHB
 from hydra_plugins.hydra_pbt_sweeper.hydra_pbt import HydraPBT
+from utils import run_short_dehb, run_short_pbt
 
 
 def test_deepcave_logs():
@@ -37,6 +39,7 @@ def test_wandb_logs():
             max_budget=3,
             dimensions=0,
             wandb_project="test",
+            wandb_entity="the_eimer",
             wandb_tags=["test_tag"],
         )
     except:
@@ -55,6 +58,7 @@ def test_wandb_logs():
             config_interval=1,
             num_config_changes=1,
             wandb_project="test",
+            wandb_entity="the_eimer",
             wandb_tags=["test_tag"],
         )
     except:

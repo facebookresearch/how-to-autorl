@@ -1,15 +1,17 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-from hydra_plugins.hydra_dehb_sweeper.dehb_sweeper import DEHBSweeper
+import os
+import shutil
+import time
+
+import ConfigSpace as CS
 from hydra.core.plugins import Plugins
 from hydra.plugins.sweeper import Sweeper
-from hydra_plugins.hydra_dehb_sweeper.hydra_dehb import HydraDEHB
-from dummy_dehb_function import run_dummy
-import ConfigSpace as CS
-import time
-import os
-from utils import run_short_dehb
 from pytest import mark
-import shutil
+
+from dummy_dehb_function import run_dummy
+from hydra_plugins.hydra_dehb_sweeper.dehb_sweeper import DEHBSweeper
+from hydra_plugins.hydra_dehb_sweeper.hydra_dehb import HydraDEHB
+from utils import run_short_dehb
 
 
 def test_sweeper_found() -> None:

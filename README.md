@@ -2,20 +2,33 @@
 
 This repository contains hydra sweeper versions of proven AutoRL tuning tools for pluag-and-play use. 
 Currently included:
-- DEHB
-- Standard PBT (with warmstarting option)
-- PB2 (with Mix/Multi versions and warmstarting option)
-- BGT
+- [Differential Evolution Hyperband](https://arxiv.org/pdf/2105.09821.pdf)
+- Standard [Population Based Training](https://arxiv.org/pdf/1711.09846.pdf) (with warmstarting option)
+- [Population Based Bandits](https://arxiv.org/pdf/2002.02518.pdf) (with Mix/Multi versions and warmstarting option)
+- [Bayesian-Generational Population Based Training](https://arxiv.org/pdf/2207.09405v1.pdf)
 
 We recommend starting in the examples directory to see how the sweepers work.
 Assume that everything here is a *minimizer*! You can maximize instead by passing 'maximize=true' as a sweeper kwarg.
+For more background information, see [here](docs/index.md).
 
 ## Installation
-We recommend creating a conda environment to install the sweeper in:
+We recommend creating a conda environment to install the sweeper in. Choose which you want to use and install the dependencies for these sweepers. For all available options, use 'all' or:
 ```bash
 conda create -n autorl-sweepers python==3.9
 conda activate autorl-sweepers
-pip install -e .[all] 
+pip install -e .[dehb,pb2,bgt]
+```
+
+If you want to work on the code itself, you can also use:
+```bash
+make install-dev
+```
+
+## Examples
+In ['examples'](examples) you can see example configurations and setups for all sweepers on Stable Baselines 3 agents.
+To run an example with the sweeper, you need to set the '--multirun' flag:
+```bash
+python examples/dehb_for_pendulum_ppo.py -m
 ```
 
 ## Usage in your own project

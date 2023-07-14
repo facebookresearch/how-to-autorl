@@ -1,21 +1,20 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-
+import json
 import logging
 import os
-import time
-import json
 import pickle
-import wandb
+import time
+
 import numpy as np
+import wandb
 from ConfigSpace.hyperparameters import (
-    BetaIntegerHyperparameter,
     CategoricalHyperparameter,
     NormalIntegerHyperparameter,
     OrdinalHyperparameter,
     UniformIntegerHyperparameter,
 )
+from deepcave import Objective, Recorder
 from hydra.utils import to_absolute_path
-from deepcave import Recorder, Objective
 from omegaconf import OmegaConf
 
 log = logging.getLogger(__name__)
@@ -39,8 +38,11 @@ class HydraPBT:
         model_based=False,
         base_dir=False,
         population_size=64,
+        population_scheme=None,
         config_interval=None,
         num_config_changes=None,
+        fidelity_scheme=None,
+        min_budget=None,
         quantiles=0.25,
         resample_probability=0.25,
         perturbation_factors=[1.2, 0.8],
@@ -48,6 +50,7 @@ class HydraPBT:
         categorical_prob=0.25,
         warmstart=False,
         wandb_project=False,
+        wandb_entity=False,
         wandb_tags=["pbt"],
         deepcave=False,
         maximize=False,
@@ -134,9 +137,31 @@ class HydraPBT:
         self.num_config_changes = num_config_changes
         self.total_budget = total_budget
         if self.config_interval is None:
-            self.config_interval = int(total_budget // self.num_config_changes)
+            self.config_interval = int(total_budget // (self.num_config_changes + 1))
         if self.num_config_changes is None:
             self.num_config_changes = int(total_budget // self.config_interval) - 1
+
+        self.dynamic_population = False
+        self.dynamic_config_interval = False
+        if fidelity_scheme == "sh":
+            self.population_schedule = [int(self.config_interval // min_budget) * self.population_size]
+            self.config_interval_schedule = [min_budget]
+            last_pop_size = int(self.config_interval // min_budget)
+            last_config_interval = min_budget
+            for i in range(len(num_config_changes)):
+                last_pop_size = max(4, last_pop_size // 2)
+                last_config_interval = min(2 * last_config_interval, (self.population_size // 4) * self.config_interval)
+                self.population_schedule.append(last_pop_size)
+                self.config_interval_schedule.append(last_config_interval)
+            self.dynamic_population = True
+            self.dynamic_config_interval = True
+        elif fidelity_scheme == "hb":
+            raise NotImplementedError
+        elif population_scheme == "linear_decrease":
+            inital_pop_size = 2 * self.population_size
+            final_pop_size = 0.5 * self.population_size
+            self.population_schedule = np.linspace(inital_pop_size, final_pop_size, num=self.num_config_changes)
+            self.dynamic_population = True
 
         self.current_steps = 0
         self.iteration = 0
@@ -148,21 +173,17 @@ class HydraPBT:
             self.history[i] = {"configs": [], "performances": [], "overwritten": []}
 
         self.categorical_hps = [
-            n
-            for n in list(self.configspace.keys())
-            if isinstance(self.configspace.get_hyperparameter(n), CategoricalHyperparameter)
+            n for n in list(self.configspace.keys()) if isinstance(self.configspace[n], CategoricalHyperparameter)
         ]
         self.categorical_hps += [
-            n
-            for n in list(self.configspace.keys())
-            if isinstance(self.configspace.get_hyperparameter(n), OrdinalHyperparameter)
+            n for n in list(self.configspace.keys()) if isinstance(self.configspace[n], OrdinalHyperparameter)
         ]
         self.continuous_hps = [n for n in list(self.configspace.keys()) if n not in self.categorical_hps]
         self.hp_bounds = np.array(
             [
                 [
-                    self.configspace.get_hyperparameter(n).lower,
-                    self.configspace.get_hyperparameter(n).upper,
+                    self.configspace[n].lower,
+                    self.configspace[n].upper,
                 ]
                 for n in list(self.configspace.keys())
                 if n not in self.categorical_hps
@@ -177,8 +198,10 @@ class HydraPBT:
         self.wandb_project = wandb_project
         if self.wandb_project:
             wandb_config = OmegaConf.to_container(global_config, resolve=False, throw_on_missing=False)
+            assert wandb_entity, "Please provide an entity to log to W&B."
             wandb.init(
                 project=self.wandb_project,
+                entity=wandb_entity,
                 tags=wandb_tags,
                 config=wandb_config,
             )
@@ -212,18 +235,9 @@ class HydraPBT:
                 # Perturb
                 perturbation_factor = np.random.choice(self.perturbation_factors)
                 perturbed_value = config[name] * perturbation_factor
-                if (
-                    isinstance(hp, UniformIntegerHyperparameter)
-                    or isinstance(hp, NormalIntegerHyperparameter)
-                    or isinstance(hp, BetaIntegerHyperparameter)
-                ):
+                if isinstance(hp, UniformIntegerHyperparameter) or isinstance(hp, NormalIntegerHyperparameter):
                     perturbed_value = int(perturbed_value)
-                if (perturbation_factor > 1 and perturbed_value > 0) or (
-                    perturbation_factor <= 1 and perturbed_value <= 0
-                ):
-                    config[name] = min(perturbed_value, hp.upper)
-                else:
-                    config[name] = max(perturbed_value, hp.lower)
+                config[name] = max(min(perturbed_value, hp.upper), hp.lower)
 
         if not self.categorical_fixed:
             for n in self.categorical_hps:
@@ -414,14 +428,14 @@ class HydraPBT:
         List[Configuration]
             The initial configurations.
         """
-        if self.resume:
-            performances = [self.history[i]["performances"][-1] for i in range(self.population_size)]
-            old_configs = [self.history[i]["configs"][-1] for i in range(self.population_size)]
         overrides = []
         configs = []
         if self.current_steps == 0:
             return self.get_initial_configs()
         else:
+            if self.resume:
+                performances = [self.history[i]["performances"][-1] for i in range(self.population_size)]
+                old_configs = [self.history[i]["configs"][-1] for i in range(self.population_size)]
             # Check where to copy weights and where to discard
             performance_quantiles = np.quantile(performances, [self.quantiles])[0]
             worst_config_ids = [i for i in range(len(performances)) if performances[i] > performance_quantiles[1]]
@@ -525,11 +539,9 @@ class HydraPBT:
         configs: List[Configuration]
             A list of the recent configs
         """
-        log.info(self.population_size)
         for i in range(self.population_size):
             self.history[i]["configs"].append(configs[i])
             self.history[i]["performances"].append(performances[i])
-        log.info(self.history)
         self.current_steps += self.config_interval
         self.iteration += 1
         with open(os.path.join(self.output_dir, "pbt.log"), "a+") as f:
@@ -597,14 +609,20 @@ class HydraPBT:
         state["history"] = self.history
         state["iteration"] = self.iteration
         state["current_steps"] = self.current_steps
-        state["output_dir"] = self.output_dir
+        if self.dynamic_population:
+            state["population_schedule"] = self.population_schedule
+        if self.dynamic_config_interval:
+            state["config_interval_schedule"] = self.config_interval_schedule
         return state
 
     def _set_state(self, state):
         self.history = state["history"]
         self.iteration = state["iteration"]
         self.current_steps = state["current_steps"]
-        self.output_dir = state["output_dir"]
+        if self.dynamic_config_interval:
+            self.config_interval_schedule = state["config_interval_schedule"]
+        if self.dynamic_population:
+            self.population_schedule = state["population_schedule"]
 
     def run(self, verbose=False):
         """
@@ -629,20 +647,32 @@ class HydraPBT:
         performances = np.zeros(self.population_size)
         configs = None
         self.start = time.time()
+        self.budget_history = []
         while self.iteration <= self.num_config_changes:
             opt_time_start = time.time()
+            if self.dynamic_population:
+                self.population_size = self.population_schedule[self.iteration]
+            if self.dynamic_config_interval:
+                self.config_interval = self.config_interval_schedule[self.iteration]
             overrides, configs = self.select_configs(performances, configs)
             self.opt_time += time.time() - opt_time_start
             performances, _ = self.run_configs(overrides)
             opt_time_start = time.time()
             self.record_iteration(performances, configs)
+            self.budget_history.append(self.config_interval)
             if self.deepcave:
-                for c, p in zip(configs, performances):
-                    self.deepcave_recorder.start(config=c, budget=self.config_interval)
-                    self.deepcave_recorder.end(costs=p, config=c, budget=self.config_interval)
+                for _, (c, p) in enumerate(zip(configs, performances)):
+                    self.deepcave_recorder.start(config=c, budget=self.current_steps)
+                    self.deepcave_recorder.end(
+                        costs=p,
+                        config=c,
+                        budget=self.current_steps,
+                        additional={"iteration": self.iteration},
+                    )
             if verbose:
                 log.info(f"Finished Generation {self.iteration}!")
-                log.info(f"Current best agent has reward of {-np.round(min(performances), decimals=2)}.")
+                _, inc_performance = self.get_incumbent()
+                log.info(f"Current best agent has reward of {np.round(inc_performance, decimals=2)}.")
             self._save_incumbent()
             self.checkpoint_pbt()
             self.opt_time += time.time() - opt_time_start

@@ -1,29 +1,25 @@
-# A lot of this code is adapted from the original implementation of PB2 Mix/Mult: https://github.com/jparkerholder/procgen_autorl
-
+# A lot of this code is adapted from the original implementation of PB2 Mix/Mult:
+# https://github.com/jparkerholder/procgen_autorl
 import logging
 from copy import deepcopy
 
+import GPy
 import numpy as np
 from ConfigSpace.hyperparameters import (
-    BetaIntegerHyperparameter,
     NormalIntegerHyperparameter,
     UniformIntegerHyperparameter,
 )
 
 from hydra_plugins.hydra_pbt_sweeper.hydra_pbt import HydraPBT
 from hydra_plugins.hydra_pbt_sweeper.pb2_utils import (
+    UCB,
+    TV_MixtureViaSumAndProduct,
+    TV_SquaredExp,
     exp3_get_cat,
     normalize,
     optimize_acq,
     standardize,
-    TV_MixtureViaSumAndProduct,
-    TV_SquaredExp,
-    UCB,
 )
-
-from hydra_plugins.utils.lazy_imports import lazy_import
-
-GPy = lazy_import("GPy")
 
 log = logging.getLogger(__name__)
 
@@ -53,6 +49,7 @@ class HydraPB2(HydraPBT):
         categorical_mutation="mix",
         warmstart=False,
         wandb_project=False,
+        wandb_entity=False,
         wandb_tags=["pbt"],
         deepcave=False,
         maximize=False,
@@ -127,6 +124,7 @@ class HydraPB2(HydraPBT):
             init_size=init_size,
             warmstart=warmstart,
             wandb_project=wandb_project,
+            wandb_entity=wandb_entity,
             wandb_tags=wandb_tags,
             deepcave=deepcave,
             maximize=maximize,
@@ -136,8 +134,8 @@ class HydraPB2(HydraPBT):
         self.hp_bounds = np.array(
             [
                 [
-                    self.configspace.get_hyperparameter(n).lower,
-                    self.configspace.get_hyperparameter(n).upper,
+                    self.configspace[n].lower,
+                    self.configspace[n].upper,
                 ]
                 for n in list(self.configspace.keys())
                 if n not in self.categorical_hps
@@ -161,7 +159,7 @@ class HydraPB2(HydraPBT):
         """
         cats = []
         for i, n in enumerate(self.categorical_hps):
-            choices = self.configspace.get_hyperparameter(n).choices
+            choices = self.configspace[n].choices
             if self.iteration <= 1 or not all([y > 0 for y in self.ys]):
                 exp3_ys = self.ys[..., np.newaxis]
             else:
@@ -195,6 +193,7 @@ class HydraPB2(HydraPBT):
         """
         if len(self.current) == 0:
             m1 = deepcopy(self.m)
+            cat_locs = [len(self.X[0]) - x - 1 for x in reversed(range(len(self.cat_values[0])))]
         else:
             # add the current trials to the dataset
             current_use = normalize(self.current, self.hp_bounds.T)
@@ -220,7 +219,6 @@ class HydraPB2(HydraPBT):
 
             if self.categorical_mutation == "mix" and len(self.categorical_hps) > 0:
                 cat_locs = [len(self.X[0]) - x - 1 for x in reversed(range(len(self.cat_values[0])))]
-
                 kernel = TV_MixtureViaSumAndProduct(
                     self.X.shape[1],
                     variance_1=1.0,
@@ -244,11 +242,23 @@ class HydraPB2(HydraPBT):
 
         xt = optimize_acq(UCB, self.m, m1, self.fixed, len(self.fixed[0]))
         # convert back...
+        if self.categorical_mutation == "mix":
+            try:
+                cats = [xt[cat_locs]]
+            except:
+                cat_locs = np.array(cat_locs) - self.fixed.shape[1]
+                cats = [xt[cat_locs]]
+            xt = np.delete(xt, cat_locs)
+            if len(xt) > len(self.continuous_hps):
+                xt = xt[self.fixed.shape[1] :]
+        else:
+            cats = self.cat_current
+
         xt = xt * (np.max(self.hp_bounds.T, axis=0) - np.min(self.hp_bounds.T, axis=0)) + np.min(
             self.hp_bounds.T, axis=0
         )
         xt = xt.astype(np.float32)
-        cats = self.cat_current
+
         all_hps = [len(self.history[0]["performances"]), performance]
         xt_ind = 0
         cat_ind = 0
@@ -262,12 +272,8 @@ class HydraPB2(HydraPBT):
 
         curr = []
         for v, n in zip(xt, self.continuous_hps):
-            hp = self.configspace.get_hyperparameter(n)
-            if (
-                isinstance(hp, UniformIntegerHyperparameter)
-                or isinstance(hp, NormalIntegerHyperparameter)
-                or isinstance(hp, BetaIntegerHyperparameter)
-            ):
+            hp = self.configspace[n]
+            if isinstance(hp, UniformIntegerHyperparameter) or isinstance(hp, NormalIntegerHyperparameter):
                 v = int(v)
             else:
                 v = float(v)
@@ -302,7 +308,8 @@ class HydraPB2(HydraPBT):
                 config[n] = self.cat_current[0][i]
         else:
             config = self.get_categoricals(config)
-        config = self.get_continuous(config, performance, self.X, self.y)
+        if len(self.continuous_hps) > 0:
+            config = self.get_continuous(config, performance, self.X, self.y)
         return config
 
     def get_model_data(self, performances=None, configs=None):
@@ -384,7 +391,10 @@ class HydraPB2(HydraPBT):
         self.all_hps = np.array(all_hps)
         self.ys = np.array(ys)
 
-        self.X = normalize(self.hp_values, self.hp_bounds.T)
+        if len(self.continuous_hps) > 0:
+            self.X = normalize(self.hp_values, self.hp_bounds.T)
+        else:
+            self.X = self.hp_values
         self.y = standardize(self.ys).reshape(self.ys.size, 1)
         # If all values are the same, don't normalize to avoid nans, instead just cap.
         # This probably only happens if improvement is 0 for all anyway.
@@ -399,7 +409,11 @@ class HydraPB2(HydraPBT):
         self.ts = normalize(self.ts, [0, len(self.history[0]["performances"])])
         ps = normalize(ps, [min_perf, max_perf])
         self.fixed = np.array([[t, p] for t, p in zip(self.ts, ps)])
-        self.X = np.concatenate((self.fixed, self.X), axis=1)
+        if self.X is not None:
+            self.X = np.concatenate((self.fixed, self.X), axis=1)
+        else:
+            self.X = self.fixed
+
         self.X[self.X <= 0] = 0.01
         self.X[self.X >= 1] = 0.99
 
@@ -418,7 +432,7 @@ class HydraPB2(HydraPBT):
 
         if self.categorical_mutation == "mix" and len(self.categorical_hps):
             self.X = np.concatenate((self.X, self.cat_values), axis=1)
-            self.fixed = np.concatenate((self.fixed, self.cat_values), axis=1)
+            # self.fixed = np.concatenate((self.fixed, self.cat_values), axis=1)
             cat_locs = [len(self.X[0]) - x - 1 for x in reversed(range(len(self.cat_values[0])))]
 
             kernel = TV_MixtureViaSumAndProduct(
@@ -435,10 +449,13 @@ class HydraPB2(HydraPBT):
         else:
             kernel = TV_SquaredExp(input_dim=self.X.shape[1], variance=1.0, lengthscale=1.0, epsilon=0.1)
 
+        self.X = np.nan_to_num(self.X)
+        self.y = np.nan_to_num(self.y)
         self.X[self.X <= 0.01] = 0.01
         self.X[self.X >= 0.99] = 0.99
         self.y[self.y <= 0.01] = 0.001
         self.y[self.y >= 0.99] = 0.99
+
         try:
             self.m = GPy.models.GPRegression(self.X, self.y, kernel)
             self.m.optimize()

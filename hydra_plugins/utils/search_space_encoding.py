@@ -107,6 +107,8 @@ def search_space_to_config_space(
                 cfg["default"] = None
             if "log" not in cfg:
                 cfg["log"] = False
+            if "q" not in cfg:
+                cfg["q"] = None
             hyperparameters.append(cfg)
         search_space.hyperparameters = hyperparameters
 
@@ -117,6 +119,9 @@ def search_space_to_config_space(
             search_space["forbiddens"] = []
 
         jason_string = json.dumps(search_space, cls=JSONCfgEncoder)
+        import logging
+
+        logging.info(f"json string: {jason_string}")
         cs = csjson.read(jason_string)
     elif type(search_space) == ConfigurationSpace:
         cs = search_space
