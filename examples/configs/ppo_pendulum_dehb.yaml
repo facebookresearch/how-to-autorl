@@ -2,7 +2,8 @@ defaults:
   - algorithm: ppo
   - search_space: ppo
   - override hydra/sweeper: DEHB
-  - override hydra/launcher: submitit_local
+# if you want to use slurm, uncomment here and below:
+#  - override hydra/launcher: submitit_slurm
 
 hydra:
 #  launcher:

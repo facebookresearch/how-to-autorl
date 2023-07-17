@@ -2,9 +2,8 @@
 
 import logging
 
-import gym
+import gymnasium as gym
 import hydra
-import numpy as np
 import stable_baselines3
 from omegaconf import DictConfig, OmegaConf
 from stable_baselines3.common.evaluation import evaluate_policy

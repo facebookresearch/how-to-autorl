@@ -1,28 +1,20 @@
 # All of this is from the original code at: https://github.com/jparkerholder/procgen_autorl
 from __future__ import division, print_function
 
+import logging
 import math
 from random import random
 
-import matplotlib.pyplot as plt
+import GPy
+
+# import matplotlib.pyplot as plt
 import numpy as np
 
-from hydra_plugins.utils.lazy_imports import lazy_import
+# import scipy
+from scipy import optimize as scipy_optimize
+from sklearn import metrics as sklearn_metrics
+from sklearn.metrics import pairwise as sklearn_metrics_pairwise
 
-GPy = lazy_import("GPy")
-import scipy
-
-sklearn_metrics = lazy_import("sklearn.metrics")
-sklearn_metrics_pairwise = lazy_import("sklearn.metrics.pairwise")
-scipy_optimize = lazy_import("scipy.optimize")
-# from GPy.kern import Kern
-# from GPy.core import Param
-
-# from sklearn.metrics import pairwise_distances
-# from sklearn.metrics.pairwise import euclidean_distances
-# from scipy.optimize import minimize
-
-import logging
 log = logging.getLogger(__name__)
 
 
@@ -124,7 +116,6 @@ class TV_MixtureViaSumAndProduct(GPy.kern.Kern):
         )
 
     def prepare_data(self, X, X2):
-
         T1 = X[:, 0].reshape(-1, 1)
         T2 = X2[:, 0].reshape(-1, 1)
 
@@ -143,40 +134,38 @@ class TV_MixtureViaSumAndProduct(GPy.kern.Kern):
         return T1, T2, X_cat, X_cont, X2_cat, X2_cont
 
     def K1(self, X, X2):
-
-        ## format data
+        # format data
         if X2 is None:
             X2 = np.copy(X)
 
         T1, T2, X_cat, X_cont, X2_cat, X2_cont = self.prepare_data(X, X2)
 
-        ## time kernel k_t
+        # time kernel k_t
         dists = sklearn_metrics.pairwise_distances(T1, T2, "cityblock")
         timekernel_1 = (1 - self.epsilon_1) ** (0.5 * dists)
 
-        ## SE kernel k_se
+        # SE kernel k_se
         RBF = self.variance_1 * np.exp(
             -np.square(sklearn_metrics_pairwise.euclidean_distances(X_cont, X2_cont)) / self.lengthscale
         )
 
-        ## k1 = k_se * k_t
+        # k1 = k_se * k_t
         k1 = RBF * timekernel_1
 
         return k1
 
     def K2(self, X, X2):
-
-        ## format data
+        # format data
         if X2 is None:
             X2 = np.copy(X)
 
         T1, T2, X_cat, X_cont, X2_cat, X2_cont = self.prepare_data(X, X2)
 
-        ## time kernel k_t
+        # time kernel k_t
         dists = sklearn_metrics.pairwise_distances(T1, T2, "cityblock")
         timekernel_2 = (1 - self.epsilon_2) ** (0.5 * dists)
 
-        ## CategoryOverlapKernel
+        # CategoryOverlapKernel
         # convert cat to int so we can subtract
         cat_vals = list(set(X_cat.flatten()).union(set(X2_cat.flatten())))
         for i, val in enumerate(cat_vals):
@@ -187,28 +176,27 @@ class TV_MixtureViaSumAndProduct(GPy.kern.Kern):
         diff1 = np.logical_not(diff)
         k_cat = self.variance_2 * np.sum(diff1, -1) / len(self.cat_dims)
 
-        ## k2 = k_cat * k_t
+        # k2 = k_cat * k_t
         k2 = k_cat * timekernel_2
 
         return k2
 
     def K(self, X, X2):
-
-        ## clip epsilons
+        # clip epsilons
         if self.epsilon_1 > 0.5:  # 0.5
             self.epsilon_1 = 0.5
 
         if self.epsilon_2 > 0.5:  # 0.5
             self.epsilon_2 = 0.5
 
-        ## format data
+        # format data
         if X2 is None:
             X2 = np.copy(X)
 
         k1 = self.K1(X, X2)
         k2 = self.K2(X, X2)
 
-        ##### K_mix
+        # K_mix
         k_out = self.variance_mix * ((1 - self.mix) * 0.5 * (k1 + k2) + self.mix * k1 * k2)
 
         return k_out
@@ -220,7 +208,7 @@ class TV_MixtureViaSumAndProduct(GPy.kern.Kern):
         return np.ones(X.shape[0])
 
     def update_gradients_full(self, dL_dK, X, X2):
-        ## format data
+        # format data
 
         if X2 is None:
             X2 = np.copy(X)
@@ -228,7 +216,7 @@ class TV_MixtureViaSumAndProduct(GPy.kern.Kern):
         k1_xx = self.K1(X, X2)
         k2_xx = self.K2(X, X2)
 
-        K_mix = self.K(X, X2)
+        # K_mix = self.K(X, X2)
 
         T1, T2, X_cat, X_cont, X2_cat, X2_cont = self.prepare_data(X, X2)
 
@@ -251,7 +239,7 @@ class TV_MixtureViaSumAndProduct(GPy.kern.Kern):
         diff1 = np.logical_not(diff)
         k_h = self.variance_2 * np.sum(diff1, -1) / len(self.cat_dims)
 
-        #### K1 grads
+        # K1 grads
         dist2 = np.square(sklearn_metrics_pairwise.euclidean_distances(X_cont, X2_cont)) / self.lengthscale
 
         dvar1 = np.exp(-np.square((sklearn_metrics_pairwise.euclidean_distances(X_cont, X2_cont)) / self.lengthscale))
@@ -269,7 +257,7 @@ class TV_MixtureViaSumAndProduct(GPy.kern.Kern):
         self.lengthscale.gradient = np.sum(dKout_l * dL_dK)
         self.epsilon_1.gradient = np.sum(dKout_eps1 * dL_dK)
 
-        #### K2 grads
+        # K2 grads
         dvar2 = np.sum(diff1, -1) / len(self.cat_dims)
 
         deps2 = -n * (1 - self.epsilon_2) ** (n - 1)
@@ -279,7 +267,7 @@ class TV_MixtureViaSumAndProduct(GPy.kern.Kern):
         self.variance_2.gradient = np.sum(dKout_var2 * dL_dK)
         self.epsilon_2.gradient = np.sum(dKout_eps2 * dL_dK)
 
-        #### K_mix grads
+        # K_mix grads
 
         self.mix.gradient = np.sum(dL_dK * (-(k1_xx + k2_xx) + (k1_xx * k2_xx)))
 
@@ -413,7 +401,7 @@ def estimate_alpha(batch_size, gamma, Wc, C):
     idx_min = np.argmin(y_tries)
     x_init_min = x_tries[idx_min]
 
-    res = minimize(
+    res = scipy_optimize.minimize(
         single_evaluation,
         x_init_min,
         method="BFGS",
@@ -426,7 +414,6 @@ def estimate_alpha(batch_size, gamma, Wc, C):
 
 
 def timevarying_compute_prob_dist_and_draw_hts(weights, gamma, batch_size, omega, pending_actions):
-
     # number of category
     C = len(weights)
 
@@ -479,7 +466,6 @@ def distrEXP3M(weights, gamma=0.0):
 
 
 def exp3_get_cat(row, data, numRounds, index, pop_size):
-
     arms = row
     numActions = len(arms)
     batch_size = len(data.T[0])
@@ -496,18 +482,17 @@ def exp3_get_cat(row, data, numRounds, index, pop_size):
     tt = 0
 
     weights = [1.0] * numActions
-    all_choice = []
+    # all_choice = []
 
     min_t = int(min(data.T[0]))
     max_t = int(max(data.T[0]))
 
     count = 0
-    choice = [0] * numRounds
-    all_choice = []
+    # choice = [0] * numRounds
+    # all_choice = []
 
     # this is just where we build the distributions...
     for tt in range(min_t, max_t + 1):
-
         (batch_choice, probabilityDistribution, S0,) = timevarying_compute_prob_dist_and_draw_hts(
             weights, gamma, batch_size, omega, []  # pendingactions
         )
@@ -528,7 +513,6 @@ def exp3_get_cat(row, data, numRounds, index, pop_size):
         rewards = data.T[-1]
 
         for idx, val in enumerate(batch_choice):
-
             if val in S0:
                 weights[val] += right_term
             else:
@@ -564,7 +548,9 @@ def exp3_get_cat(row, data, numRounds, index, pop_size):
 
 
 def with_proba(epsilon):
-    """Bernoulli test, with probability :math:`\varepsilon`, return `True`, and with probability :math:`1 - \varepsilon`, return `False`.
+    """Bernoulli test, with probability `epsilon`, return `True`,
+        and with probability `1 - epsilon`, return `False`.
+
     Example:
     >>> from random import seed; seed(0)  # reproductible
     >>> with_proba(0.5)
@@ -586,9 +572,14 @@ def with_proba(epsilon):
 
 # --- Utility functions
 def DepRound(weights_p, k=1, isWeights=True):
-    r"""[[Algorithms for adversarial bandit problems with multiple plays, by T.Uchiya, A.Nakamura and M.Kudo, 2010](http://hdl.handle.net/2115/47057)] Figure 5 (page 15) is a very clean presentation of the algorithm.
-    - Inputs: :math:`k < K` and weights_p :math:`= (p_1, \dots, p_K)` such that :math:`\sum_{i=1}^{K} p_i = k` (or :math:`= 1`).
-    - Output: A subset of :math:`\{1,\dots,K\}` with exactly :math:`k` elements. Each action :math:`i` is selected with probability exactly :math:`p_i`.
+    """
+    [[Algorithms for adversarial bandit problems with multiple plays,
+        by T.Uchiya, A.Nakamura and M.Kudo, 2010](http://hdl.handle.net/2115/47057)]
+    Figure 5 (page 15) is a very clean presentation of the algorithm.
+    - Inputs: `k < K` and weights_p `= (p_1, *, p_K)` such that :math:`sum_{i=1}^{K} p_i = k` (or `= 1`).
+    - Output: A subset of :math:`{1,*,K}` with exactly `k` elements.
+        Each action `i` is selected with probability exactly `p_i`.
+
     Example:
     >>> import numpy as np; import random
     >>> np.random.seed(0); random.seed(0)  # for reproductibility!
@@ -627,9 +618,7 @@ def DepRound(weights_p, k=1, isWeights=True):
         p = p / np.sum(p)
     assert np.all(0 <= p) and np.all(
         p <= 1
-    ), "Error: the weights (p_1, ..., p_K) should all be 0 <= p_i <= 1 ...".format(
-        p
-    )  # DEBUG
+    ), f"Error: the weights (p_1, ..., p_K) should all be 0 <= p_i <= 1 ..., is {p}"
     assert np.isclose(np.sum(p), 1), "Error: the sum of weights p_1 + ... + p_K should be = 1 (= {}).".format(
         np.sum(p)
     )  # DEBUG
@@ -676,10 +665,15 @@ def DepRound(weights_p, k=1, isWeights=True):
 
 
 def DepRound2(weights_p, k=1):
-    r"""[[Algorithms for adversarial bandit problems with multiple plays, by T.Uchiya, A.Nakamura and M.Kudo, 2010](http://hdl.handle.net/2115/47057)] Figure 5 (page 15) is a very clean presentation of the algorithm.
-    - Inputs: :math:`k < K` and weights_p :math:`= (p_1, \dots, p_K)` such that :math:`\sum_{i=1}^{K} p_i = k` (or :math:`= 1`).
-    - Output: A subset of :math:`\{1,\dots,K\}` with exactly :math:`k` elements. Each action :math:`i` is selected with probability exactly :math:`p_i`.
+    """
+    [[Algorithms for adversarial bandit problems with multiple plays,
+        by T.Uchiya, A.Nakamura and M.Kudo, 2010](http://hdl.handle.net/2115/47057)]
+    Figure 5 (page 15) is a very clean presentation of the algorithm.
+    - Inputs: :math:`k < K` and weights_p `= (p_1, *, p_K)` such that `sum_{i=1}^{K} p_i = k` (or :math:`= 1`).
+    - Output: A subset of :math:`{1,*,K}` with exactly `k` elements.
+        Each action `i` is selected with probability exactly `p_i`.
     Example:
+
     >>> import numpy as np; import random
     >>> np.random.seed(0); random.seed(0)  # for reproductibility!
     >>> K = 5
@@ -717,9 +711,7 @@ def DepRound2(weights_p, k=1):
         p = p / np.sum(p)
     assert np.all(0 <= p) and np.all(
         p <= 1
-    ), "Error: the weights (p_1, ..., p_K) should all be 0 <= p_i <= 1 ...".format(
-        p
-    )  # DEBUG
+    ), f"Error: the weights (p_1, ..., p_K) should all be 0 <= p_i <= 1 ... but are {p}"
     assert np.isclose(np.sum(p), 1), "Error: the sum of weights p_1 + ... + p_K should be = 1 (= {}).".format(
         np.sum(p)
     )  # DEBUG

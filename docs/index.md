@@ -7,15 +7,19 @@ For in more information, we recommend the algorithms' original papers and our ex
 RL has been shown to be fairly sensitive to its hyperparameters and many papers thus report running sweeps or grid searches across their hyperparameters [0](https://arxiv.org/pdf/1912.06680.pdf)[1](https://arxiv.org/pdf/2102.10330.pdf)[2](https://arxiv.org/pdf/2211.00539.pdf). 
 This is pretty inefficient, however, as we know grid search does [not scale well at all](https://www.jmlr.org/papers/volume13/bergstra12a/bergstra12a.pdf).
 Therefore we can invest the compute budget (and often human time) better by using methods that have shown to be both efficient and well-performing on RL problems - like for example DEHB and PBT variations.
+We show this in our [ICML'23 paper](https://arxiv.org/pdf/2306.01324.pdf).
 
 ## Our Tuning Algorithms
 [DEHB](https://arxiv.org/pdf/2105.09821.pdf) is a simple but effective multi-fidelity tuning method based on [HyperBand](https://arxiv.org/pdf/1603.06560.pdf) and [Differential Evolution](https://link.springer.com/article/10.1023/a:1008202821328). 
+Multi-fidelity means it will evaluate the algorithm at different budgets (most often different runtimes, discarding configurations that perform poorly already in the beginning of training) in order to be able to explore more hyperparameter configurations for less computing costs.
 It will run several HyperBand brackets where the starting point is randomly sampled in the first bracket and then mutated for the next one using DE.
 
 [PBT](https://arxiv.org/pdf/1902.01894.pdf) is stands for Population-Based Training where a population of agents is trained in parallel. 
 Their configurations are updated during training after a configuration interval of steps.
 There are several options of how to perform this update, we provide standard PBT (which simply modulates the current value up or down by a fixed value), [PB2](https://arxiv.org/pdf/2106.15883.pdf) in its Mix and Mult variations (where BO takes care of configuration selection) and [BG-PBT](https://arxiv.org/pdf/2207.09405.pdf) (also using BO, but with a specialized kernel and optional architecture search). 
 There's also the option of using a number of full warmup runs at the start of training to pre-select the inital configurations from a larger set of runs.
+
+Note that if you want to use the architecture search option of BG-PBT, you'll need to provide a distillation loop from one architecture to another.
 
 ## Installation
 We recommend creating a conda environment to install the sweeper in:
@@ -58,7 +62,7 @@ To optimize scheduling, we recommend providing an estimate of the runtime of a f
 The sweeper will then scale down the requested time and this will help your jobs be scheduled quicker.
 You can do this in the sweeper kwargs by setting 'slurm=True' and 'slurm_timeout' to the timeout value in minutes. For DEHB, this would look like this:
 ```bash
-python example_script.py --multirun +hydra.sweeper.dehb_kwargs.slurm=true +hydra.sweeper.dehb_kwargs.slurm_timeout=60
+python <your_script> --multirun +hydra.sweeper.dehb_kwargs.slurm=true +hydra.sweeper.dehb_kwargs.slurm_timeout=60
 ```
 
 ## Integrations
@@ -68,16 +72,31 @@ Additionally, DeepCave offers plugins specifically for AutoML rundata analysis t
 
 To enable W&B logging, you need to provide your project name and optionally any tags you want to include in you run in the sweeper kwargs. As an example with DEHB:
 ```bash
-python example_script.py --multirun +hydra.sweeper.dehb_kwargs.wandb_project=<project-name> +hydra.sweeper.dehb_kwargs.wandb_tag=[<tag>] 
+python <your_script> --multirun +hydra.sweeper.dehb_kwargs.wandb_project=<project-name> +hydra.sweeper.dehb_kwargs.wandb_entity=<entity> +hydra.sweeper.dehb_kwargs.wandb_tag=[<tag>] 
 ```
 
 DeepCave is activated, e.g. for PBT:
 ```bash
-python example_script.py --multirun +hydra.sweeper.pbt_kwargs.deepcave=true
+python <your_script> --multirun +hydra.sweeper.pbt_kwargs.deepcave=true
 ```
 The DeepCave logs can be found in the sweep directory.
 
+## A Typical HPO Workflow
+
+To start with, you'll want to define all the important details about your setting:
+- which environments do you want to tune on?
+- how many seeds will you use?
+- how much budget do you have?
+- which hyperparameters do you want to tune?
+
+You should also already define a corresponding test setting to see how your hyperparameters perform in practice. 
+The you'll start the optimization for **all** methods you want to report (unless you're sure your baselines are already well tuned using a similar budget). Once you have the results, test them on the test setting.
+
+Often you'll want some additional insights into the hyperparameters after the fact since you might want to measure hyperparameter sensitivity, importance of dependencies between hyperparameters. The easiest way of doing this, is to use DeepCave logging in the sweepers and then check out its insights.
+
 ## Best Practices
+
+This is an abbreviated list with the most important points to remember. Our [checklist](../checklist.pdf) provides a more complete overview for reporting purposes.
 
 **1. Tune all hyperparameters that could be relevant**
 RL is a highly dynamic and quite complex optimization process where many hyperparameters can influence the result. 

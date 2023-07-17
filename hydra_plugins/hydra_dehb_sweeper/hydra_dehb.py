@@ -1,19 +1,17 @@
 # A lot of this code was adapted from the original DEHB repository: https://github.com/automl/dehb
+import json
 import logging
 import os
-import time
-import json
-import wandb
-import numpy as np
 import pickle
+import time
 from copy import deepcopy
+
+import numpy as np
+import wandb
+from deepcave import Objective, Recorder
+from dehb.optimizers import dehb
 from hydra.utils import to_absolute_path
-from deepcave import Recorder, Objective
 from omegaconf import OmegaConf
-
-from hydra_plugins.utils.lazy_imports import lazy_import
-
-dehb = lazy_import("dehb.optimizers.dehb")
 
 log = logging.getLogger(__name__)
 
@@ -47,6 +45,7 @@ class HydraDEHB(dehb.DEHB):
         max_age=np.inf,
         async_strategy="immediate",
         wandb_project=False,
+        wandb_entity=False,
         wandb_tags=["dehb"],
         deepcave=False,
         maximize=False,
@@ -102,8 +101,10 @@ class HydraDEHB(dehb.DEHB):
         self.wandb_project = wandb_project
         if self.wandb_project:
             wandb_config = OmegaConf.to_container(global_config, resolve=False, throw_on_missing=False)
+            assert wandb_entity, "Please provide an entity to log to W&B."
             wandb.init(
                 project=self.wandb_project,
+                entity=wandb_entity,
                 tags=wandb_tags,
                 config=wandb_config,
             )

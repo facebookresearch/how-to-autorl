@@ -1,9 +1,11 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-from hydra_plugins.hydra_pbt_sweeper.pbt_sweeper import PBTSweeper
+import shutil
+
 from hydra.core.plugins import Plugins
 from hydra.plugins.sweeper import Sweeper
+
+from hydra_plugins.hydra_pbt_sweeper.pbt_sweeper import PBTSweeper
 from utils import run_short_pbt
-import shutil
 
 
 def test_sweepers_found() -> None:

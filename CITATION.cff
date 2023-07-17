@@ -1,0 +1,46 @@
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+cff-version: 1.2.0
+
+message: "If you use the sweepers in one of your projects, please cite us:"
+
+title: "AutoRL Hydra Sweepers"
+date-released: "2023-03-03"
+
+url: "https://arxiv.org/pdf/2306.01324.pdf"
+repository-code: "https://github.com/facebookresearch/how-to-autorl"
+
+version: "0.1.0"
+
+type: "software"
+keywords:
+  - "reinforcement learning"
+  - "algorithm configuration"
+  - "machine learning"
+
+license: "Apache-2.0"
+
+authors:
+    - family-names: "Eimer"
+      given-names: "Theresa" 
+      affiliation: "Leibniz University Hannover"
+
+
+preferred-citation:
+  type: "conference-paper"
+  title: "Hyperparameters in Reinforcement Learning and How to Tune Them"
+  conference: "International Conference on Machine Learning (ICML)"
+  year: "2023"
+  url: "https://arxiv.org/pdf/2306.01324.pdf"
+
+  authors:
+    - family-names: "Eimer"
+      given-names: "Theresa" 
+      affiliation: "Leibniz University Hannover"
+
+    - family-names: "Lindauer"
+      given-names: "Marius"
+      affiliation: "Leibniz University Hannover"
+
+    - family-names: "Raileanu"
+      given-names: "Roberta"
+      affiliation: "Meta AI"

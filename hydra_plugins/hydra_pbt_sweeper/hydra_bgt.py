@@ -1,31 +1,28 @@
 # A lot of this code is adapted from the original BG-PBT: https://github.com/xingchenwan/bgpbt
-
-import os
-import time
 import logging
-import shutil
-import wandb
-import torch
+import os
 import random
-import numpy as np
+import shutil
+import time
 from copy import deepcopy
-import ConfigSpace as CS
 
-from hydra_plugins.hydra_pbt_sweeper.hydra_pb2 import HydraPB2
+import ConfigSpace as CS
+import gpytorch
+import numpy as np
+import torch
+import wandb
+
 from hydra_plugins.hydra_pbt_sweeper.bgt_utils import (
-    normalize,
-    copula_standardize,
-    train_gp,
-    Casmo4RL,
     MAX_CHOLESKY_SIZE,
     MIN_CUDA,
+    Casmo4RL,
     _Casmo,
+    copula_standardize,
+    normalize,
+    train_gp,
 )
-
+from hydra_plugins.hydra_pbt_sweeper.hydra_pb2 import HydraPB2
 from hydra_plugins.hydra_pbt_sweeper.pb2_utils import standardize
-from hydra_plugins.utils.lazy_imports import lazy_import
-
-gpytorch = lazy_import("gpytorch")
 
 log = logging.getLogger(__name__)
 
@@ -64,6 +61,7 @@ class HydraBGT(HydraPB2):
         ard=False,
         use_standard_gp=False,
         wandb_project=False,
+        wandb_entity=False,
         wandb_tags=["pbt"],
         deepcave=False,
         maximize=False,
@@ -149,6 +147,7 @@ class HydraBGT(HydraPB2):
             init_size=init_size,
             warmstart=True,
             wandb_project=wandb_project,
+            wandb_entity=wandb_entity,
             wandb_tags=wandb_tags,
             deepcave=deepcave,
             maximize=maximize,
@@ -192,8 +191,8 @@ class HydraBGT(HydraPB2):
         self.hp_bounds = np.array(
             [
                 [
-                    self.configspace.get_hyperparameter(n).lower,
-                    self.configspace.get_hyperparameter(n).upper,
+                    self.configspace[n].lower,
+                    self.configspace[n].upper,
                 ]
                 for n in list(self.configspace.keys())
                 if n not in self.categorical_hps
@@ -307,7 +306,6 @@ class HydraBGT(HydraPB2):
                 hp = self.full_configspace.get(self.nas_hps[j])
                 if type(hp).__name__ in [
                     "UniformIntegerHyperparameter",
-                    "BetaIntegerHyperparameter",
                     "NormalIntegerHyperparameter",
                 ]:
                     suggested_archs[i][j] = int(min(max(round(suggested_archs[i][j]), hp.lower), hp.upper))
@@ -505,17 +503,19 @@ class HydraBGT(HydraPB2):
             f.write("\n")
 
         if self.wandb_project:
-            wandb.log("iteration", self.iteration)
-            wandb.log("optimization_time", time.time() - self.start)
-            wandb.log("incumbent_performance", -min(performances))
+            stats = {}
+            stats["iteration"] = self.iteration
+            stats["optimization_time"] = time.time() - self.start
+            stats["incumbent_performance"] = -min(performances)
             for i in range(self.population_size):
-                wandb.log(f"performance_{i}", -performances[i])
+                stats[f"performance_{i}"] = -performances[i]
                 for n in configs[0].keys():
-                    wandb.log(f"config_{i}_{n}", configs[i].get(n))
-            wandb.log("num_steps", self.iteration * self.config_interval)
+                    stats[f"config_{i}_{n}"] = configs[i].get(n)
+            stats["num_steps"] = self.iteration * self.config_interval
             best_config = configs[np.argmin(performances)]
             for n in best_config.keys():
-                wandb.log(f"incumbent_{n}", best_config.get(n))
+                stats[f"incumbent_{n}"] = best_config.get(n)
+            wandb.log(stats)
 
     def get_initial_configs(self, best_agents=None):
         """
@@ -795,9 +795,13 @@ class HydraBGT(HydraPB2):
             current = np.array([c + [self.iteration + 1] + [curr_rew_diff] for c in current]).astype(float)
             # get the hp of the best agent selected from -- this will be trust region centre
             new_config_array = self.get_config(X, self.y, ts, current, t_current, x_center=X_best)
+            new_config = CS.Configuration(self.configspace, vector=new_config_array)
         else:
-            new_config_array = self.get_config(X, self.y, ts, None, None, x_center=X_best)
-        new_config = CS.Configuration(self.configspace, vector=new_config_array)
+            try:
+                new_config_array = self.get_config(X, self.y, ts, None, None, x_center=X_best)
+                new_config = CS.Configuration(self.configspace, vector=new_config_array)
+            except:
+                new_config = super(HydraPB2, self).perturb_hps(config, None, None, None)
         self.current.append(list(new_config.values()))
         return new_config
 
@@ -937,6 +941,11 @@ class HydraBGT(HydraPB2):
         # scale the fixed dimensions to [0, 1]^d
         y = copula_standardize(deepcopy(y).ravel())
         # simply call the _create_and_select_candidates subroutine to return
+        # But first: make sure normalization produced no value errors
+        X[X <= 0.01] = 0.01
+        X[X >= 0.99] = 0.99
+        y[y <= 0.01] = 0.001
+        y[y >= 0.99] = 0.99
         next_config = self.casmo._create_and_select_candidates(
             X,
             y,

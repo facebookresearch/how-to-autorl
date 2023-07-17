@@ -3,22 +3,20 @@ from __future__ import annotations
 
 from typing import List
 
-import os
 import logging
 import operator
+import os
 from functools import reduce
-from rich import print as printr
 
 from hydra.core.plugins import Plugins
 from hydra.plugins.sweeper import Sweeper
 from hydra.types import HydraContext, TaskFunction
 from hydra.utils import get_class
-
 from omegaconf import DictConfig, OmegaConf, open_dict
+from rich import print as printr
+
 from hydra_plugins.hydra_dehb_sweeper.hydra_dehb import HydraDEHB
-from hydra_plugins.utils.search_space_encoding import (
-    search_space_to_config_space,
-)
+from hydra_plugins.utils.search_space_encoding import search_space_to_config_space
 
 log = logging.getLogger(__name__)
 

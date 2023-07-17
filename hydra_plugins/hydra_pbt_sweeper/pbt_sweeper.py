@@ -1,5 +1,4 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-
 from typing import Any, Dict, List
 
 from hydra.plugins.sweeper import Sweeper
