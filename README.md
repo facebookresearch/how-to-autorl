@@ -1,6 +1,6 @@
 # AutoRL Hydra Sweepers
 
-This repository contains hydra sweeper versions of proven AutoRL tuning tools for pluag-and-play use. 
+This repository contains hydra sweeper versions of proven AutoRL tuning tools for plug-and-play use. 
 Currently included:
 - [Differential Evolution Hyperband](https://arxiv.org/pdf/2105.09821.pdf)
 - Standard [Population Based Training](https://arxiv.org/pdf/1711.09846.pdf) (with warmstarting option)
