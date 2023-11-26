@@ -50,7 +50,10 @@ class HydraPBT:
         categorical_prob=0.25,
         warmstart=False,
         wandb_project=False,
+        wandb_group=None,
+        wandb_job_type=None,
         wandb_entity=False,
+        wandb_id=None,
         wandb_tags=["pbt"],
         deepcave=False,
         maximize=False,
@@ -201,9 +204,13 @@ class HydraPBT:
             assert wandb_entity, "Please provide an entity to log to W&B."
             wandb.init(
                 project=self.wandb_project,
+                group=wandb_group,
+                job_type=wandb_job_type,
                 entity=wandb_entity,
                 tags=wandb_tags,
                 config=wandb_config,
+                resume="allow",
+                id=wandb_id if wandb_id else wandb.util.generate_id(),
             )
 
     def perturb_hps(self, config, _, __, ___):
