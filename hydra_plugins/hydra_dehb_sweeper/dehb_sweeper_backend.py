@@ -138,7 +138,10 @@ class DEHBSweeperBackend(Sweeper):
         else:
             log.info(f"Sweep overrides: {' '.join(arguments)}")
 
-        configspace = search_space_to_config_space(search_space=self.search_space)
+        configspace = search_space_to_config_space(
+            search_space=self.search_space,
+            seed=self.dehb_kwargs.get("dehb_seed", None),
+        )
         dehb = HydraDEHB(
             self.config,
             arguments,

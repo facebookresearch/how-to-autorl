@@ -134,7 +134,10 @@ class PBTSweeperBackend(Sweeper):
         else:
             log.info(f"Sweep overrides: {' '.join(arguments)}")
 
-        configspace = search_space_to_config_space(search_space=self.search_space)
+        configspace = search_space_to_config_space(
+            search_space=self.search_space,
+            seed=self.pbt_kwargs.get("pbt_seed", None),
+        )
 
         if self.optimizer == "pb2":
             opt_class = HydraPB2
