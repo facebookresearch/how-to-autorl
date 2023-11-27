@@ -8,6 +8,8 @@ import operator
 import os
 from functools import reduce
 
+import numpy as np
+
 from hydra.core.plugins import Plugins
 from hydra.plugins.sweeper import Sweeper
 from hydra.types import HydraContext, TaskFunction
@@ -138,6 +140,7 @@ class PBTSweeperBackend(Sweeper):
             search_space=self.search_space,
             seed=self.pbt_kwargs.get("pbt_seed", None),
         )
+        np.random.seed(self.pbt_kwargs.get("pbt_seed", None))
 
         if self.optimizer == "pb2":
             opt_class = HydraPB2
