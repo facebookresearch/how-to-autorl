@@ -8,6 +8,8 @@ import operator
 import os
 from functools import reduce
 
+import numpy as np
+
 from hydra.core.plugins import Plugins
 from hydra.plugins.sweeper import Sweeper
 from hydra.types import HydraContext, TaskFunction
@@ -138,7 +140,12 @@ class DEHBSweeperBackend(Sweeper):
         else:
             log.info(f"Sweep overrides: {' '.join(arguments)}")
 
-        configspace = search_space_to_config_space(search_space=self.search_space)
+        configspace = search_space_to_config_space(
+            search_space=self.search_space,
+            seed=self.dehb_kwargs.get("dehb_seed", None),
+        )
+        np.random.seed(self.dehb_kwargs.get("dehb_seed", None))
+
         dehb = HydraDEHB(
             self.config,
             arguments,
