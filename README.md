@@ -43,7 +43,7 @@ The sweepers will only be found if the `hydra_plugins` directory is in your PYTH
 ## Hyperparameter Search Space
 The definition of the hyperparameters is based on [ConfigSpace](https://github.com/automl/ConfigSpace/).
 The syntax of the hyperparameters is according to ConfigSpace's json serialization.
-Please see their [user guide](https://automl.github.io/ConfigSpace/master/User-Guide.html)
+Please see their [user guide](https://automl.github.io/ConfigSpace/main/guide.html)
 for more information on how to configure hyperparameters.
 
 Your yaml-configuration file must adhere to following syntax:
